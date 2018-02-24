@@ -56,8 +56,8 @@ protected:
 
     // Protected data
 
-        //- Flag to indicate to solve for the flow
-        bool solveFlow_;
+        //- Flag to indicate not to solve for the flow
+        bool frozenFlow_;
 
         //- Flag to indicate to solve for momentum
         bool momentumPredictor_;
@@ -66,7 +66,7 @@ protected:
         bool transonic_;
 
         //- Flag to indicate to relax pressure using the "consistent" approach
-        //  of SIMPLEC
+        //  of simplec
         bool consistent_;
 
 
@@ -97,8 +97,8 @@ public:
 
         // Access
 
-            //- Flag to indicate to solve for the flow
-            inline bool solveFlow() const;
+            //- Flag to indicate not to solve for the flow
+            inline bool frozenFlow() const;
 
             //- Flag to indicate to solve for momentum
             inline bool momentumPredictor() const;
@@ -107,7 +107,7 @@ public:
             inline bool transonic() const;
 
             //- Flag to indicate to relax pressure using the "consistent"
-            //  approach of SIMPLEC
+            //  approach of simplec
             inline bool consistent() const;
 };
 

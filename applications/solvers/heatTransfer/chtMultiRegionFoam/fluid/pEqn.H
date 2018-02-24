@@ -1,4 +1,4 @@
-if (!mesh.steady() && !pimple.SIMPLErho())
+if (!mesh.steady() && !pimple.simpleRho())
 {
     rho = thermo.rho();
 }
@@ -16,7 +16,8 @@ surfaceScalarField phig(-rhorAUf*ghf*fvc::snGrad(rho)*mesh.magSf());
 surfaceScalarField phiHbyA
 (
     "phiHbyA",
-    fvc::flux(rho*HbyA) + rhorAUf*fvc::ddtCorr(rho, U, phi)
+    fvc::flux(rho*HbyA)
+  + MRF.zeroFilter(rhorAUf*fvc::ddtCorr(rho, U, phi))
 );
 
 MRF.makeRelative(fvc::interpolate(rho), phiHbyA);
@@ -132,7 +133,7 @@ if (adjustMass || pLimited)
 }
 
 // Density updates
-if (adjustMass || pLimited || mesh.steady() || pimple.SIMPLErho())
+if (adjustMass || pLimited || mesh.steady() || pimple.simpleRho())
 {
     rho = thermo.rho();
 }

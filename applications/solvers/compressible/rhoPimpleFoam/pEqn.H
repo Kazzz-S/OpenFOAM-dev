@@ -1,4 +1,4 @@
-if (!pimple.SIMPLErho())
+if (!pimple.simpleRho())
 {
     rho = thermo.rho();
 }
@@ -20,7 +20,7 @@ surfaceScalarField phiHbyA
 (
     "phiHbyA",
     fvc::interpolate(rho)*fvc::flux(HbyA)
-  + rhorAUf*fvc::ddtCorr(rho, U, phi, rhoUf)
+  + MRF.zeroFilter(rhorAUf*fvc::ddtCorr(rho, U, phi, rhoUf))
 );
 
 fvc::makeRelative(phiHbyA, rho, U);
@@ -104,7 +104,7 @@ if (pressureControl.limit(p))
     p.correctBoundaryConditions();
     rho = thermo.rho();
 }
-else if (pimple.SIMPLErho())
+else if (pimple.simpleRho())
 {
     rho = thermo.rho();
 }

@@ -151,6 +151,7 @@ $(derivedFvPatchFields)/flowRateInletVelocity/flowRateInletVelocityFvPatchVector
 $(derivedFvPatchFields)/flowRateOutletVelocity/flowRateOutletVelocityFvPatchVectorField.C
 $(derivedFvPatchFields)/fluxCorrectedVelocity/fluxCorrectedVelocityFvPatchVectorField.C
 $(derivedFvPatchFields)/freestream/freestreamFvPatchFields.C
+$(derivedFvPatchFields)/freestreamVelocity/freestreamVelocityFvPatchVectorField.C
 $(derivedFvPatchFields)/freestreamPressure/freestreamPressureFvPatchScalarField.C
 $(derivedFvPatchFields)/inletOutlet/inletOutletFvPatchFields.C
 $(derivedFvPatchFields)/inletOutletTotalTemperature/inletOutletTotalTemperatureFvPatchScalarField.C
@@ -249,8 +250,6 @@ $(interpolation)/interpolationCellPatchConstrained/makeInterpolationCellPatchCon
 $(interpolation)/interpolationCellPoint/cellPointWeight/cellPointWeight.C
 $(interpolation)/interpolationCellPoint/makeInterpolationCellPoint.C
 $(interpolation)/interpolationCellPointFace/makeInterpolationCellPointFace.C
-$(interpolation)/interpolationCellPointWallModified/cellPointWeightWallModified/cellPointWeightWallModified.C
-$(interpolation)/interpolationCellPointWallModified/makeInterpolationCellPointWallModified.C
 $(interpolation)/interpolationPointMVC/pointMVCWeight.C
 $(interpolation)/interpolationPointMVC/makeInterpolationPointMVC.C
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -165,7 +165,7 @@ bool mvBak(const fileName&, const std::string& ext = "bak");
 //- Remove a file, returning true if successful otherwise false
 bool rm(const fileName&);
 
-//- Remove a dirctory and its contents
+//- Remove a directory and its contents
 bool rmDir(const fileName&);
 
 //- Sleep for the specified number of seconds
@@ -210,33 +210,6 @@ label osRandomInteger();
 
 //- Return random double precision (uniform distribution between 0 and 1)
 scalar osRandomDouble();
-
-
-// Thread handling
-
-//- Allocate a thread
-label allocateThread();
-
-//- Start a thread
-void createThread(const label, void *(*start_routine) (void *), void *arg);
-
-//- Wait for thread
-void joinThread(const label);
-
-//- Delete a thread
-void freeThread(const label);
-
-//- Allocate a mutex variable
-label allocateMutex();
-
-//- Lock a mutex variable
-void lockMutex(const label);
-
-//- Unlock a mutex variable
-void unlockMutex(const label);
-
-//- Free a mutex variable
-void freeMutex(const label);
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

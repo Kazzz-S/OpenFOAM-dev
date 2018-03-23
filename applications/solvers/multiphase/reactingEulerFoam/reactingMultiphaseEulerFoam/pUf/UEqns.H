@@ -3,78 +3,37 @@ Info<< "Constructing face momentum equations" << endl;
 PtrList<fvVectorMatrix> UEqns(phases.size());
 
 {
-    // Update of coefficients
-    fluid.momentumTransfer();
+    fluid.momentumTransfer(); // !!! Update coefficients shouldn't be necessary
+                              //     This should be done on demand
 
-    PtrList<fvVectorMatrix> UgradUs(phases.size());
+    autoPtr<phaseSystem::momentumTransferTable>
+        momentumTransferPtr(fluid.momentumTransferf());
 
-    forAll(phases, phasei)
+    phaseSystem::momentumTransferTable&
+        momentumTransfer(momentumTransferPtr());
+
+    forAll(fluid.movingPhases(), movingPhasei)
     {
-        phaseModel& phase = phases[phasei];
-
-        UgradUs.set
-        (
-            phasei,
-            new fvVectorMatrix
-            (
-                fvm::div(phase.phi(), phase.U())
-              - fvm::Sp(fvc::div(phase.phi()), phase.U())
-              + MRF.DDt(phase.U())
-            )
-        );
-    }
-
-    forAll(phases, phasei)
-    {
-        phaseModel& phase = phases[phasei];
+        phaseModel& phase = fluid.movingPhases()[movingPhasei];
 
         const volScalarField& alpha = phase;
-        volScalarField& rho = phase.thermo().rho();
-        const surfaceScalarField& alphaRhoPhi = phase.alphaRhoPhi();
-        volVectorField& U = phase.U();
-
+        const volScalarField& rho = phase.rho();
+        volVectorField& U = phase.URef();
 
         UEqns.set
         (
-            phasei,
+            phase.index(),
             new fvVectorMatrix
             (
-                fvm::div(alphaRhoPhi, U) - fvm::Sp(fvc::div(alphaRhoPhi), U)
-              + MRF.DDt(alpha*rho, U)
-              + phase.turbulence().divDevRhoReff(U)
-              + fvm::SuSp(fvOptions(alpha, rho)&rho, U)
+                phase.UfEqn()
              ==
-                fvOptions(alpha, rho, U)
+               *momentumTransfer[phase.name()]
+              + fvOptions(alpha, rho, U)
             )
         );
 
-        // Add gradient part of virtual mass force
-        forAllConstIter
-        (
-            phaseSystem::VmTable,
-            fluid.Vms(),
-            VmIter
-        )
-        {
-            const volScalarField& Vm(*VmIter());
-
-            const phasePair& pair(fluid.phasePairs()[VmIter.key()]);
-
-            if (pair.contains(phase))
-            {
-                const phaseModel& otherPhase = pair.otherPhase(phase);
-
-                UEqns[phasei] +=
-                    Vm
-                   *(
-                        UgradUs[phasei]
-                      - (UgradUs[otherPhase.index()] & otherPhase.U())
-                    );
-            }
-        }
-
-        UEqns[phasei].relax();
-        fvOptions.constrain(UEqns[phasei]);
+        UEqns[phase.index()].relax();
+        fvOptions.constrain(UEqns[phase.index()]);
         U.correctBoundaryConditions();
         fvOptions.correct(U);
     }

@@ -192,6 +192,7 @@ $(derivedFvPatchFields)/translatingWallVelocity/translatingWallVelocityFvPatchVe
 $(derivedFvPatchFields)/turbulentInlet/turbulentInletFvPatchFields.C
 $(derivedFvPatchFields)/turbulentIntensityKineticEnergyInlet/turbulentIntensityKineticEnergyInletFvPatchScalarField.C
 $(derivedFvPatchFields)/uniformDensityHydrostaticPressure/uniformDensityHydrostaticPressureFvPatchScalarField.C
+$(derivedFvPatchFields)/prghUniformDensityHydrostaticPressure/prghUniformDensityHydrostaticPressureFvPatchScalarField.C
 $(derivedFvPatchFields)/uniformFixedGradient/uniformFixedGradientFvPatchFields.C
 $(derivedFvPatchFields)/uniformFixedValue/uniformFixedValueFvPatchFields.C
 $(derivedFvPatchFields)/uniformInletOutlet/uniformInletOutletFvPatchFields.C
@@ -239,7 +240,6 @@ fields/surfaceFields/surfaceFields.C
 fvMatrices/fvMatrices.C
 fvMatrices/fvScalarMatrix/fvScalarMatrix.C
 fvMatrices/solvers/MULES/MULES.C
-fvMatrices/solvers/MULES/CMULES.C
 fvMatrices/solvers/GAMGSymSolver/GAMGAgglomerations/faceAreaPairGAMGAgglomeration/faceAreaPairGAMGAgglomeration.C
 
 interpolation = interpolation/interpolation

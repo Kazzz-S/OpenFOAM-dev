@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2017-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,7 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "exponential.H"
+#include "CoulaloglouTavlaridesCoalescence.H"
 #include "addToRunTimeSelectionTable.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -32,10 +32,15 @@ namespace Foam
 {
 namespace diameterModels
 {
-namespace breakupModels
+namespace coalescenceModels
 {
-    defineTypeNameAndDebug(exponential, 0);
-    addToRunTimeSelectionTable(breakupModel, exponential, dictionary);
+    defineTypeNameAndDebug(CoulaloglouTavlaridesCoalescence, 0);
+    addToRunTimeSelectionTable
+    (
+        coalescenceModel,
+        CoulaloglouTavlaridesCoalescence,
+        dictionary
+    );
 }
 }
 }
@@ -43,30 +48,46 @@ namespace breakupModels
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::diameterModels::breakupModels::exponential::exponential
+Foam::diameterModels::coalescenceModels::CoulaloglouTavlaridesCoalescence::
+CoulaloglouTavlaridesCoalescence
 (
     const populationBalanceModel& popBal,
     const dictionary& dict
 )
 :
-    breakupModel(popBal, dict),
-    exponent_(readScalar(dict.lookup("exponent"))),
-    C_(readScalar(dict.lookup("C")))
+    coalescenceModel(popBal, dict),
+    C1_("C1", dimless, dict.lookupOrDefault<scalar>("C1", 2.8)),
+    C2_("C2", inv(dimArea), dict.lookupOrDefault<scalar>("C2", 1.83e9))
 {}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void Foam::diameterModels::breakupModels::exponential::setBreakupRate
+void
+Foam::diameterModels::coalescenceModels::CoulaloglouTavlaridesCoalescence::
+addToCoalescenceRate
 (
-    volScalarField& breakupRate,
-    const label i
+    volScalarField& coalescenceRate,
+    const label i,
+    const label j
 )
 {
+    const phaseModel& continuousPhase = popBal_.continuousPhase();
     const sizeGroup& fi = *popBal_.sizeGroups()[i];
+    const sizeGroup& fj = *popBal_.sizeGroups()[j];
 
-    breakupRate.primitiveFieldRef() =
-        C_*exp(exponent_*fi.x().value());
+    coalescenceRate +=
+        C1_*(pow(fi.x(), 2.0/3.0) + pow(fj.x(), 2.0/3.0))
+       *sqrt(pow(fi.x(), 2.0/9.0) + pow(fj.x(), 2.0/9.0))
+       *cbrt(continuousTurbulence().epsilon())/(1 + popBal_.alphas())
+       *exp
+        (
+          - C2_*continuousPhase.mu()*continuousPhase.rho()
+           *continuousTurbulence().epsilon()
+           /sqr(sigma(fi.phase().name(), continuousPhase.name()))
+           /pow3(1 + popBal_.alphas())
+           *pow4(cbrt(fi.x())*cbrt(fj.x())/(cbrt(fi.x()) + cbrt(fj.x())))
+        );
 }
 
 

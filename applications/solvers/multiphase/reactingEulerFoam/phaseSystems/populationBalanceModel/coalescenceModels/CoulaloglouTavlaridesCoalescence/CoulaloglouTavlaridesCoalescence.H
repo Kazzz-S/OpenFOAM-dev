@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2017-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,19 +22,60 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::diameterModels::coalescenceModels::hydrodynamic
+    Foam::diameterModels::coalescenceModels::CoulaloglouTavlaridesCoalescence
 
 Description
-    Hydrodynamic kernel. Used for verification and validation of the coalescence
-    formulation implemented in the populationBalanceModel class.
+    Model of Coulaloglou and Tavlarides (1977). The coalescence rate is
+    calculated by
+
+        \f[
+            C_1 (v_i^{2/3} + v_j^{2/3}) (v_i^{2/9} + v_j^{2/9})^{1/2}
+            \frac{\epsilon_c^{1/3}}{1 + \alpha_d}
+            \text{exp}
+            \left[
+              - C_2 \frac{\mu_c \rho_c}{\sigma^2}
+                \frac{\epsilon_c}{(1 + \alpha_d)^{3}}
+                \left(
+                    \frac{v_i^{1/3} v_j^{1/3}}{v_i^{1/3} + v_j^{1/3}}
+                \right)^{4}
+            \right]
+        \f]
+
+    where
+
+    \vartable
+        \sigma      |  Surface tension [N/m]
+        v_i         |  Volume of bubble i [m3]
+        v_j         |  Volume of bubble j [m3]
+        \epsilon_c  |  Turbulent dissipation rate of continuous phase [m2/s3]
+        \alpha_d    |  Total void fraction of disperse phase [-]
+        \mu_c       |  Molecular dynamic viscosity of liquid phase [Pa s]
+        \rho_c      |  Density of continous phase [kg/m3]
+    \endvartable
+
+    References:
+    \verbatim
+        "Description of interaction processes in agitated liquid-liquid
+         dispersions"
+        Coulaloglou, C.A., Tavlarides, L.L.
+        Chemical Engineering Science, Vol. 32, Issue 11, 1977, pp. 1289-1297
+        Eq. 37, p. 1294
+    \endverbatim
+
+Usage
+    \table
+        Property     | Description             | Required    | Default value
+        C1           | Coefficient C1          | no          | 2.8
+        C2           | Coefficient C2          | no          | 1.83e9
+    \endtable
 
 SourceFiles
-    hydrodynamic.C
+    CoulaloglouTavlaridesCoalescence.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef hydrodynamic_H
-#define hydrodynamic_H
+#ifndef CoulaloglouTavlaridesCoalescence_H
+#define CoulaloglouTavlaridesCoalescence_H
 
 #include "coalescenceModel.H"
 
@@ -48,21 +89,30 @@ namespace coalescenceModels
 {
 
 /*---------------------------------------------------------------------------*\
-                        Class hydrodynamic Declaration
+              Class CoulaloglouTavlaridesCoalescence Declaration
 \*---------------------------------------------------------------------------*/
 
-class hydrodynamic
+class CoulaloglouTavlaridesCoalescence
 :
     public coalescenceModel
 {
+    // Private data
+
+        //- Optional coefficient C1, defaults to 2.8
+        dimensionedScalar C1_;
+
+        //- Optional coefficient C2, defaults to 1.83e9
+        dimensionedScalar C2_;
+
+
 public:
 
     //- Runtime type information
-    TypeName("hydrodynamic");
+    TypeName("CoulaloglouTavlarides");
 
     // Constructor
 
-        hydrodynamic
+        CoulaloglouTavlaridesCoalescence
         (
             const populationBalanceModel& popBal,
             const dictionary& dict
@@ -70,7 +120,7 @@ public:
 
 
     //- Destructor
-    virtual ~hydrodynamic()
+    virtual ~CoulaloglouTavlaridesCoalescence()
     {}
 
 

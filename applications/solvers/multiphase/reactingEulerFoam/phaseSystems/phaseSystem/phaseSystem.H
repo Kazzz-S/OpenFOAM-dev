@@ -83,6 +83,10 @@ public:
 
         typedef UPtrList<phaseModel> phaseModelPartialList;
 
+        typedef
+            HashTable<autoPtr<phasePair>, phasePairKey, phasePairKey::hash>
+            phasePairTable;
+
 
 protected:
 
@@ -91,10 +95,6 @@ protected:
         typedef
             HashTable<dictionary, phasePairKey, phasePairKey::hash>
             dictTable;
-
-        typedef
-            HashTable<autoPtr<phasePair>, phasePairKey, phasePairKey::hash>
-            phasePairTable;
 
         typedef
             HashTable<autoPtr<blendingMethod>, word, word::hash>
@@ -214,20 +214,22 @@ protected:
                 autoPtr<BlendedInterfacialModel<modelType>>,
                 phasePairKey,
                 phasePairKey::hash
-            >& models
+            >& models,
+            const bool correctFixedFluxBCs = true
         );
 
-        //- Generate pairs and per-phase sub-model tables
+        //- Generate pairs and two-sided sub-model tables
         template<class modelType>
         void generatePairsAndSubModels
         (
             const word& modelName,
             HashTable
             <
-                HashTable<autoPtr<modelType>>,
+                Pair<autoPtr<modelType>>,
                 phasePairKey,
                 phasePairKey::hash
-            >& models
+            >& models,
+            const bool correctFixedFluxBCs = true
         );
 
         //- Add the field to a phase-indexed list, with the given name,
@@ -433,7 +435,7 @@ public:
             virtual autoPtr<momentumTransferTable> momentumTransfer() = 0;
 
             //- Return the momentum transfer matrices for the face-based
-            //  algiorithm
+            //  algorithm
             virtual autoPtr<momentumTransferTable> momentumTransferf() = 0;
 
             //- Return the implicit force coefficients for the face-based

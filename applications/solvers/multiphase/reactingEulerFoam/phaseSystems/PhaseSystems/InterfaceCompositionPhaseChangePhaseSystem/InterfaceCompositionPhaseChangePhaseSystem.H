@@ -48,6 +48,7 @@ namespace Foam
 {
 
 class interfaceCompositionModel;
+class massTransferModel;
 
 /*---------------------------------------------------------------------------*\
                  Class InterfaceCompositionPhaseChangePhaseSystem Declaration
@@ -69,6 +70,13 @@ protected:
             phasePairKey::hash
         > interfaceCompositionModelTable;
 
+        typedef HashTable
+        <
+            Pair<autoPtr<BlendedInterfacialModel<massTransferModel>>>,
+            phasePairKey,
+            phasePairKey::hash
+        > massTransferModelTable;
+
         typedef HashPtrTable<volScalarField, phasePairKey, phasePairKey::hash>
             iDmdtTable;
 
@@ -76,6 +84,9 @@ protected:
     // Protected data
 
         // Sub Models
+
+            //- Mass transfer models
+            massTransferModelTable massTransferModels_;
 
             //- Interface composition models
             interfaceCompositionModelTable interfaceCompositionModels_;
@@ -113,14 +124,11 @@ public:
         //- Return the mass transfer rates for each phase
         virtual Xfer<PtrList<volScalarField>> dmdts() const;
 
-        //- Return the heat transfer matrices
-        virtual autoPtr<phaseSystem::heatTransferTable> heatTransfer() const;
-
         //- Return the mass transfer matrices
         virtual autoPtr<phaseSystem::massTransferTable> massTransfer() const;
 
         //- Correct the thermodynamics
-        virtual void correctThermo();
+        virtual void correctInterfaceThermo();
 
         //- Read base phaseProperties dictionary
         virtual bool read();

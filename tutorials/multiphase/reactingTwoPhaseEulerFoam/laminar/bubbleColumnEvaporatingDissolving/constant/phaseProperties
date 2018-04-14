@@ -138,7 +138,7 @@ interfaceComposition
 (
     (gas in liquid)
     {
-        type Saturated;
+        type saturated;
         species ( water );
         Le 1.0;
         saturationPressure
@@ -214,6 +214,10 @@ massTransfer.liquid
         type spherical;
         Le 1.0;
     }
+);
+
+phaseTransfer
+(
 );
 
 lift

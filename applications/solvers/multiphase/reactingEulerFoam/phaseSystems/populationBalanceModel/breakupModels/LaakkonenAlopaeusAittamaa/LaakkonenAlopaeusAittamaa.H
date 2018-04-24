@@ -22,62 +22,61 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::diameterModels::coalescenceModels::CoulaloglouTavlaridesCoalescence
+    Foam::diameterModels::breakupModels::LaakkonenAlopaeusAittamaa
 
 Description
-    Model of Coulaloglou and Tavlarides (1977). The coalescence rate is
-    calculated by
+    Model of Laakkonen et al. (2006). The total breakup rate is calculated by
 
         \f[
-            C_1 (v_i^{2/3} + v_j^{2/3}) (v_i^{2/9} + v_j^{2/9})^{1/2}
-            \frac{\epsilon_c^{1/3}}{1 + \alpha_d}
-            \text{exp}
-            \left[
-              - C_2 \frac{\mu_c \rho_c}{\sigma^2}
-                \frac{\epsilon_c}{(1 + \alpha_d)^{3}}
-                \left(
-                    \frac{v_i^{1/3} v_j^{1/3}}{v_i^{1/3} + v_j^{1/3}}
-                \right)^{4}
-            \right]
+            C_1 \epsilon_c^{1/3}
+            \mathrm{erfc}
+            \left(
+                \sqrt
+                {
+                    C_2 \frac{\sigma}{\rho_c \epsilon_c^{2/3} (6v_i/\pi)^{5/9}}
+                  + C_3 \frac{\mu_c}{\sqrt{\rho_c \rho_d}
+                    \epsilon_c^{1/3} (6v_i/\pi)^{4/9}}
+                }
+            \right)
         \f]
 
     where
 
     \vartable
         \sigma      |  Surface tension [N/m]
-        v_i         |  Volume of droplet i [m3]
-        v_j         |  Volume of droplet j [m3]
+        v_i         |  Volume of mother bubble i [m]
         \epsilon_c  |  Turbulent dissipation rate of continuous phase [m2/s3]
-        \alpha_d    |  Total void fraction of disperse phase [-]
         \mu_c       |  Molecular dynamic viscosity of liquid phase [Pa s]
         \rho_c      |  Density of continous phase [kg/m3]
+        \rho_d      |  Density of disperse phase [kg/m3]
     \endvartable
 
     References:
     \verbatim
-        "Description of interaction processes in agitated liquid-liquid
-         dispersions"
-        Coulaloglou, C.A., Tavlarides, L.L.
-        Chemical Engineering Science, Vol. 32, Issue 11, 1977, pp. 1289-1297
-        Eq. 37, p. 1294
+        "Validation of bubble breakage, coalescence and mass transfer models for
+         gas-liquid dispersion in agitated vessel"
+        Laakkonen, M., Alopaeus, V., Aittamaa, J.
+        Chemical Engineering Science, Vol. 61, 2006, pp. 218-228
+        Eq. 2-3, p. 220
     \endverbatim
 
 Usage
     \table
         Property     | Description             | Required    | Default value
-        C1           | Coefficient C1          | no          | 2.8
-        C2           | Coefficient C2          | no          | 1.83e9
+        C1           | Coefficient C1          | no          | 6.0
+        C2           | Coefficient C2          | no          | 0.04
+        C3           | Coefficient C3          | no          | 0.01
     \endtable
 
 SourceFiles
-    CoulaloglouTavlaridesCoalescence.C
+    LaakkonenAlopaeusAittamaa.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef CoulaloglouTavlaridesCoalescence_H
-#define CoulaloglouTavlaridesCoalescence_H
+#ifndef LaakkonenAlopaeusAittamaa_H
+#define LaakkonenAlopaeusAittamaa_H
 
-#include "coalescenceModel.H"
+#include "breakupModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -85,34 +84,37 @@ namespace Foam
 {
 namespace diameterModels
 {
-namespace coalescenceModels
+namespace breakupModels
 {
 
 /*---------------------------------------------------------------------------*\
-              Class CoulaloglouTavlaridesCoalescence Declaration
+                  Class LaakkonenAlopaeusAittamaa Declaration
 \*---------------------------------------------------------------------------*/
 
-class CoulaloglouTavlaridesCoalescence
+class LaakkonenAlopaeusAittamaa
 :
-    public coalescenceModel
+    public breakupModel
 {
     // Private data
 
-        //- Optional coefficient C1, defaults to 2.8
+        //- Optional coefficient C1, defaults to 6.0
         dimensionedScalar C1_;
 
-        //- Optional coefficient C2, defaults to 1.83e9
+        //- Optional coefficient C2, defaults to 0.04
         dimensionedScalar C2_;
+
+        //- Optional coefficient C3, defaults to 0.01
+        dimensionedScalar C3_;
 
 
 public:
 
     //- Runtime type information
-    TypeName("CoulaloglouTavlarides");
+    TypeName("LaakkonenAlopaeusAittamaa");
 
     // Constructor
 
-        CoulaloglouTavlaridesCoalescence
+        LaakkonenAlopaeusAittamaa
         (
             const populationBalanceModel& popBal,
             const dictionary& dict
@@ -120,25 +122,24 @@ public:
 
 
     //- Destructor
-    virtual ~CoulaloglouTavlaridesCoalescence()
+    virtual ~LaakkonenAlopaeusAittamaa()
     {}
 
 
     // Member Functions
 
-        //- Add to coalescenceRate
-        virtual void addToCoalescenceRate
+        //- Set total breakupRate
+        virtual void setBreakupRate
         (
-            volScalarField& coalescenceRate,
-            const label i,
-            const label j
+            volScalarField& breakupRate,
+            const label i
         );
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace coalescenceModels
+} // End namespace breakupModels
 } // End namespace diameterModels
 } // End namespace Foam
 

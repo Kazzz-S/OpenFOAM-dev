@@ -14,7 +14,4 @@ runApplication snappyHexMesh -overwrite
 runApplication createBaffles -overwrite
 runApplication mergeOrSplitBaffles -split -overwrite
 
-# Initialize alpha
-runApplication setFields
-
 #------------------------------------------------------------------------------

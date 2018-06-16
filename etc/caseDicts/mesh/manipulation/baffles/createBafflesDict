@@ -10,27 +10,38 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      mapFieldsParDict;
+    object      createBafflesDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// Specify how to map patches. There are three different options:
-// - patch exists in the source case: specify mapping (patchMap)
-// - patch should be interpolated from internal values in source case
-//   (cuttingPatches)
-// - patch should not be mapped. Default if not in patchMap or cuttingPatches
+// Whether to convert internal faces only (so leave boundary faces intact).
+// This is only relevant if your face selection type can pick up boundary
+// faces.
+internalFacesOnly true;
 
-// List of pairs of target/source patches for mapping
-patchMap
-(
-    lid movingWall
-);
+// Example using "blades" as name of baffle patch
+baffles
+{
+    baffles  // group name
+    {
+        //- Use predefined faceZone to select faces and orientation.
+        type        faceZone;
+        zoneName    blades;
 
-// List of target patches cutting the source domain (these need to be
-// handled specially e.g. interpolated from internal values)
-cuttingPatches
-(
-    fixedWalls
-);
+        patches
+        {
+            master
+            {
+                name        blades;  // patch name
+                type        wall;
+            }
+            slave
+            {
+                $master;
+            }
+        }
+    }
+}
+
 
 // ************************************************************************* //

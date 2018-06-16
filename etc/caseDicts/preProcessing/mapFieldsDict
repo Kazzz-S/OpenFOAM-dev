@@ -10,12 +10,22 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      meshQualityDict;
+    object      mapFieldsDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// Include defaults parameters from master dictionary
-#include "$WM_PROJECT_DIR/etc/caseDicts/meshQualityDict"
+// Map data from source patch to target coincident patch
+patchMap
+(
+    <sourcePatch1> <targetPatch1>
+    <sourcePatch2> <targetPatch2>
+);
 
+// Target patches whose field values are mapped from the internal source mesh
+cuttingPatches
+(
+    <targetPatch1>
+    <targetPatch2>
+);
 
 // ************************************************************************* //

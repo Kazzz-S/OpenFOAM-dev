@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,32 +23,30 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "cachedRandom.H"
+#include "SolidReaction.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline Foam::label Foam::cachedRandom::seed() const
+namespace Foam
 {
-    return seed_;
+
+// * * * * * * * * * * * * * * * Ostream Operator  * * * * * * * * * * * * * //
+
+template<class ReactionThermo>
+inline Ostream& operator<<
+(
+    Ostream& os,
+    const SolidReaction<ReactionThermo>& r
+)
+{
+    OStringStream reaction;
+    os << r.solidReactionStr(reaction)<< token::END_STATEMENT <<nl;
+    return os;
 }
 
 
-inline const Foam::scalarList& Foam::cachedRandom::samples() const
-{
-    return samples_;
-}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-
-inline Foam::label Foam::cachedRandom::sampleI() const
-{
-    return sampleI_;
-}
-
-
-inline Foam::label& Foam::cachedRandom::sampleI()
-{
-    return sampleI_;
-}
-
+} // End namespace Foam
 
 // ************************************************************************* //

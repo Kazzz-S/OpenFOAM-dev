@@ -40,6 +40,7 @@ Description
 #include "thermoPhysicsTypes.H"
 #include "basicSpecieMixture.H"
 #include "cellModeller.H"
+#include "thermoTypeFunctions.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

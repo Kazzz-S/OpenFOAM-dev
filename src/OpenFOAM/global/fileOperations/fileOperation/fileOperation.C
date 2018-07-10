@@ -775,7 +775,11 @@ Foam::IOobject Foam::fileOperation::findInstance
     for (; instanceI >= 0; --instanceI)
     {
         // Shortcut: if actual directory is the timeName we've already tested it
-        if (ts[instanceI].name() == startIO.instance())
+        if
+        (
+            ts[instanceI].name() == startIO.instance()
+         && ts[instanceI].name() != stopInstance
+        )
         {
             continue;
         }
@@ -979,6 +983,17 @@ Foam::label Foam::fileOperation::nProcs
     }
     Pstream::scatter(nProcs, Pstream::msgType(), comm_);
     return nProcs;
+}
+
+
+void Foam::fileOperation::flush() const
+{
+    if (debug)
+    {
+        Pout<< "fileOperation::flush : clearing processor directories cache"
+            << endl;
+    }
+    procsDirs_.clear();
 }
 
 

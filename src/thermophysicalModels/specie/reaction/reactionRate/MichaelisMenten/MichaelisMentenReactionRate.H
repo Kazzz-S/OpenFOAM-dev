@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
+   \\    /   O peration     | Website:  https://openfoam.org
     \\  /    A nd           | Copyright (C) 2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ class MichaelisMentenReactionRate
 {
     // Private data
 
-        //- List of specie names present in reaction system
+        //- List of species present in reaction system
         const speciesTable& species_;
 
         //- The maximum reaction rate at saturating substrate concentration

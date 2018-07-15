@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
+   \\    /   O peration     | Website:  https://openfoam.org
     \\  /    A nd           | Copyright (C) 2013-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
@@ -545,6 +545,28 @@ Foam::tmp<Foam::volScalarField> Foam::multiphaseMixtureThermo::W() const
     for (++phasei; phasei != phases_.end(); ++phasei)
     {
         tW.ref() += phasei()*phasei().thermo().W();
+    }
+
+    return tW;
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::multiphaseMixtureThermo::W
+(
+    const label patchi
+) const
+{
+    PtrDictionary<phaseModel>::const_iterator phasei = phases_.begin();
+
+    tmp<scalarField> tW
+    (
+        phasei().boundaryField()[patchi]*phasei().thermo().W(patchi)
+    );
+
+    for (++phasei; phasei != phases_.end(); ++phasei)
+    {
+        tW.ref() +=
+            phasei().boundaryField()[patchi]*phasei().thermo().W(patchi);
     }
 
     return tW;

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
+   \\    /   O peration     | Website:  https://openfoam.org
     \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
@@ -108,6 +108,11 @@ void Foam::particle::hitFace
     trackingData& td
 )
 {
+    if (debug)
+    {
+        Info << "Particle " << origId() << nl << FUNCTION_NAME << nl << endl;
+    }
+
     typename TrackCloudType::particleType& p =
         static_cast<typename TrackCloudType::particleType&>(*this);
     typename TrackCloudType::particleType::trackingData& ttd =
@@ -183,6 +188,11 @@ void Foam::particle::trackToAndHitFace
     trackingData& td
 )
 {
+    if (debug)
+    {
+        Info << "Particle " << origId() << nl << FUNCTION_NAME << nl << endl;
+    }
+
     trackToFace(direction, fraction);
 
     hitFace(direction, cloud, td);

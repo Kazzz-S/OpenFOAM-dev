@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
+   \\    /   O peration     | Website:  https://openfoam.org
     \\  /    A nd           | Copyright (C) 2013-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
@@ -310,6 +310,17 @@ Foam::tmp<Foam::scalarField> Foam::twoPhaseMixtureThermo::CpByCpv
 Foam::tmp<Foam::volScalarField> Foam::twoPhaseMixtureThermo::W() const
 {
     return alpha1()*thermo1_->W() + alpha2()*thermo1_->W();
+}
+
+
+Foam::tmp<Foam::scalarField> Foam::twoPhaseMixtureThermo::W
+(
+    const label patchi
+) const
+{
+    return
+        alpha1().boundaryField()[patchi]*thermo1_->W(patchi)
+      + alpha2().boundaryField()[patchi]*thermo1_->W(patchi);
 }
 
 

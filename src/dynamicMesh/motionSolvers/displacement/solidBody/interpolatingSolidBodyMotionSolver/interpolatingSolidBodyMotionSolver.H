@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,89 +22,105 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::radiation::noRadiation
+    Foam::interpolatingSolidBodyMotionSolver
 
 Description
-    No radiation - does nothing to energy equation source terms
-    (returns zeros)
+    Solid-body motion of the mesh specified by a run-time selectable motion
+    function.  Applies SLERP interpolation of movement as function of
+    distance to the object surface to move the mesh points.
 
 SourceFiles
-    noRadiation.C
+    interpolatingSolidBodyMotionSolver.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef noRadiation_H
-#define noRadiation_H
+#ifndef interpolatingSolidBodyMotionSolver_H
+#define interpolatingSolidBodyMotionSolver_H
 
-#include "radiationModel.H"
+#include "points0MotionSolver.H"
+#include "solidBodyMotionFunction.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace radiation
-{
 
 /*---------------------------------------------------------------------------*\
-                         Class noRadiation Declaration
+        Class interpolatingSolidBodyMotionSolver Declaration
 \*---------------------------------------------------------------------------*/
 
-class noRadiation
+class interpolatingSolidBodyMotionSolver
 :
-    public radiationModel
+    public points0MotionSolver
 {
+    // Private data
+
+        //- The motion control function
+        autoPtr<solidBodyMotionFunction> SBMFPtr_;
+
+        wordReList patches_;
+
+        //- Patches to integrate forces
+        const labelHashSet patchSet_;
+
+        //- Center of gravity read from dictionary
+        vector CofG_;
+
+        //- Inner morphing distance (limit of solid-body region)
+        const scalar di_;
+
+        //- Outer morphing distance (limit of linear interpolation region)
+        const scalar do_;
+
+        //- Current interpolation scale (1 at patches, 0 at distance_)
+        pointScalarField scale_;
+
+
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
-        noRadiation(const noRadiation&);
+        interpolatingSolidBodyMotionSolver
+        (
+            const interpolatingSolidBodyMotionSolver&
+        );
 
         //- Disallow default bitwise assignment
-        void operator=(const noRadiation&);
+        void operator=(const interpolatingSolidBodyMotionSolver&);
 
 
 public:
 
     //- Runtime type information
-    TypeName("none");
+    TypeName("interpolatingSolidBody");
 
 
     // Constructors
 
-        //- Construct from components
-        noRadiation(const volScalarField& T);
-
-        //- Construct from components
-        noRadiation(const dictionary& dict, const volScalarField& T);
+        //- Construct from polyMesh and IOdictionary
+        interpolatingSolidBodyMotionSolver
+        (
+            const polyMesh&,
+            const IOdictionary& dict
+        );
 
 
     //- Destructor
-    virtual ~noRadiation();
+    ~interpolatingSolidBodyMotionSolver();
 
 
-    // Member functions
+    // Member Functions
 
-        // Edit
+        //- Return point location obtained from the current motion field
+        virtual tmp<pointField> curPoints() const;
 
-            //- Main update/correction routine
-            void correct();
-
-            //- Solve radiation equation(s)
-            void calculate();
-
-            //- Read radiationProperties dictionary
-            bool read();
-
-            //- Source term component (for power of T^4)
-            tmp<volScalarField> Rp() const;
-
-            //- Source term component (constant)
-            tmp<volScalarField::Internal> Ru() const;
+        //- Solve for motion
+        virtual void solve()
+        {}
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace radiation
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

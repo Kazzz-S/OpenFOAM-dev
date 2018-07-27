@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,89 +22,90 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::radiation::noRadiation
+    Foam::functionEntries::negEntry
 
 Description
-    No radiation - does nothing to energy equation source terms
-    (returns zeros)
+    Negate a dictionary variable by prefixing with \c #neg
+
+    E.g.
+    \verbatim
+        Umean 5.75;
+        .
+        .
+        .
+        inlet
+        {
+            type            uniformFixedValue;
+            uniformValue    (#neg $Umean 0 0);
+        }
+    \endverbatim
+    Note the space required between the \c #neg and the '$'
 
 SourceFiles
-    noRadiation.C
+    negEntry.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef noRadiation_H
-#define noRadiation_H
+#ifndef negEntry_H
+#define negEntry_H
 
-#include "radiationModel.H"
+#include "functionEntry.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace radiation
+namespace functionEntries
 {
 
 /*---------------------------------------------------------------------------*\
-                         Class noRadiation Declaration
+                         Class negEntry Declaration
 \*---------------------------------------------------------------------------*/
 
-class noRadiation
+class negEntry
 :
-    public radiationModel
+    public functionEntry
 {
     // Private Member Functions
 
+        //- Lookup variable, negate and return as a string
+        static string negateVariable
+        (
+            const dictionary& parentDict,
+            Istream& is
+        );
+
         //- Disallow default bitwise copy construct
-        noRadiation(const noRadiation&);
+        negEntry(const negEntry&);
 
         //- Disallow default bitwise assignment
-        void operator=(const noRadiation&);
+        void operator=(const negEntry&);
 
 
 public:
 
     //- Runtime type information
-    TypeName("none");
+    ClassName("neg");
 
 
-    // Constructors
+    // Member Functions
 
-        //- Construct from components
-        noRadiation(const volScalarField& T);
+        //- Execute the functionEntry in a sub-dict context
+        static bool execute(dictionary& parentDict, Istream&);
 
-        //- Construct from components
-        noRadiation(const dictionary& dict, const volScalarField& T);
-
-
-    //- Destructor
-    virtual ~noRadiation();
-
-
-    // Member functions
-
-        // Edit
-
-            //- Main update/correction routine
-            void correct();
-
-            //- Solve radiation equation(s)
-            void calculate();
-
-            //- Read radiationProperties dictionary
-            bool read();
-
-            //- Source term component (for power of T^4)
-            tmp<volScalarField> Rp() const;
-
-            //- Source term component (constant)
-            tmp<volScalarField::Internal> Ru() const;
+        //- Execute the functionEntry in a primitiveEntry context
+        static bool execute
+        (
+            const dictionary& parentDict,
+            primitiveEntry&,
+            Istream&
+        );
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace radiation
+} // End namespace functionEntries
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

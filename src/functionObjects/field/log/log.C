@@ -23,8 +23,8 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "sixDoFRigidBodyControl.H"
-#include "Time.H"
+#include "log.H"
+#include "volFields.H"
 #include "addToRunTimeSelectionTable.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -33,84 +33,74 @@ namespace Foam
 {
 namespace functionObjects
 {
-    defineTypeNameAndDebug(sixDoFRigidBodyControl, 0);
+    defineTypeNameAndDebug(log, 0);
 
     addToRunTimeSelectionTable
     (
         functionObject,
-        sixDoFRigidBodyControl,
+        log,
         dictionary
     );
 }
 }
 
 
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+
+bool Foam::functionObjects::log::calc()
+{
+    if (foundObject<volScalarField>(fieldName_))
+    {
+        const volScalarField& x = lookupObject<volScalarField>(fieldName_);
+
+        return store
+        (
+            resultName_,
+            Foam::log(max(x, clip_))
+        );
+    }
+    else
+    {
+        return false;
+    }
+
+    return true;
+}
+
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::functionObjects::sixDoFRigidBodyControl::sixDoFRigidBodyControl
+Foam::functionObjects::log::log
 (
     const word& name,
     const Time& runTime,
     const dictionary& dict
 )
 :
-    sixDoFRigidBodyState(name, runTime, dict),
-    time_(runTime),
-    meanVelocity_(Zero),
-    meanAngularVelocity_(Zero)
+    fieldExpression(name, runTime, dict)
 {
     read(dict);
-    resetName(typeName);
 }
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-Foam::functionObjects::sixDoFRigidBodyControl::~sixDoFRigidBodyControl()
+Foam::functionObjects::log::~log()
 {}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-bool Foam::functionObjects::sixDoFRigidBodyControl::read(const dictionary& dict)
+bool Foam::functionObjects::log::read(const dictionary& dict)
 {
-    sixDoFRigidBodyState::read(dict);
+    fieldExpression::read(dict);
 
-    dict.lookup("window") >> w_;
-    dict.lookup("convergedVelocity") >> convergedVelocity_;
-    dict.lookup("convergedAngularVelocity") >> convergedAngularVelocity_;
-
-    return true;
-}
-
-
-bool Foam::functionObjects::sixDoFRigidBodyControl::execute()
-{
-    if (time_.timeIndex() <= time_.startTimeIndex() + 1)
+    if (resultName_.empty())
     {
-        meanVelocity_ = cmptMag(velocity());
-        meanAngularVelocity_ = cmptMag(angularVelocity());
-    }
-    else
-    {
-        const scalar dt = time_.deltaTValue();
-        const scalar beta = min(dt/w_, 1);
-
-        meanVelocity_ = (1 - beta)*meanVelocity_ + beta*cmptMag(velocity());
-
-        meanAngularVelocity_ =
-            (1 - beta)*meanAngularVelocity_ + beta*cmptMag(angularVelocity());
+        resultName_ = "log(" + fieldName_ + ")";
     }
 
-    if
-    (
-        time_.value() - time_.startTime().value() > w_
-     && meanVelocity_ < convergedVelocity_
-     && meanAngularVelocity_ < convergedAngularVelocity_
-    )
-    {
-        time_.stopAt(Time::stopAtControl::writeNow);
-    }
+    clip_ = dict.lookupOrDefault<scalar>("clip", 0);
 
     return true;
 }

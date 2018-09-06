@@ -64,6 +64,7 @@ namespace Foam
 {
 namespace radiation
 {
+
 /*---------------------------------------------------------------------------*\
       Class wideBandDiffusiveRadiationMixedFvPatchScalarField Declaration
 \*---------------------------------------------------------------------------*/
@@ -165,6 +166,20 @@ public:
             }
 
 
+            //- Map (and resize as needed) from self given a mapping object
+            virtual void autoMap
+            (
+                const fvPatchFieldMapper&
+            );
+
+            //- Reverse map the given fvPatchField onto this fvPatchField
+            virtual void rmap
+            (
+                const fvPatchScalarField&,
+                const labelList&
+            );
+
+
         // Evaluation functions
 
             //- Update the coefficients associated with the patch field
@@ -180,8 +195,8 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace radiation
 } // End namespace Foam
-}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,112 +22,86 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::LESModels::PrandtlDelta
+    Foam::functionObjects::log
 
 Description
-    Apply Prandtl mixing-length based damping function to the specified
-    geometric delta to improve near-wall behavior or LES SGS models.
+    Calculates the natural logarithm of the specified scalar field.
 
-    \verbatim
-        delta = min(geometricDelta, (kappa/Cdelta)*y)
-    \endverbatim
+    Performs \f$ln(max(x, a))\f$ where \f$x\f$ is the field and \f$a\f$ an
+    optional clip to handle 0 or negative \f$x\f$.
 
-    Example specification in the turbulenceProperties dictionary:
-    \verbatim
-    delta           Prandtl;
-
-    kappa           0.41;
-
-    PrandtlCoeffs
-    {
-        delta   cubeRootVol;
-
-        cubeRootVolCoeffs
-        {
-            deltaCoeff      1;
-        }
-
-        Cdelta          0.158;
-    }
-    \endverbatim
+See also
+    Foam::functionObjects::fieldExpression
+    Foam::functionObjects::fvMeshFunctionObject
 
 SourceFiles
-    PrandtlDelta.C
+    log.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef PrandtlDelta_H
-#define PrandtlDelta_H
+#ifndef functionObjects_log_H
+#define functionObjects_log_H
 
-#include "LESdelta.H"
+#include "fieldExpression.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace LESModels
+namespace functionObjects
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class PrandtlDelta Declaration
+                          Class log Declaration
 \*---------------------------------------------------------------------------*/
 
-class PrandtlDelta
+class log
 :
-    public LESdelta
+    public fieldExpression
 {
     // Private data
 
-        autoPtr<LESdelta> geometricDelta_;
-        scalar kappa_;
-        scalar Cdelta_;
+        //- Optional clip (default is 0)
+        scalar clip_;
 
 
     // Private Member Functions
 
-        //- Disallow default bitwise copy construct and assignment
-        PrandtlDelta(const PrandtlDelta&);
-        void operator=(const PrandtlDelta&);
-
-        // Calculate the delta values
-        void calcDelta();
+        //- Calculate the log field and return true if successful
+        virtual bool calc();
 
 
 public:
 
     //- Runtime type information
-    TypeName("Prandtl");
+    TypeName("log");
 
 
     // Constructors
 
-        //- Construct from name, turbulenceModel and dictionary
-        PrandtlDelta
+        //- Construct from Time and dictionary
+        log
         (
             const word& name,
-            const turbulenceModel& turbulence,
-            const dictionary&
+            const Time& runTime,
+            const dictionary& dict
         );
 
 
     //- Destructor
-    virtual ~PrandtlDelta()
-    {}
+    virtual ~log();
 
 
     // Member Functions
 
-        //- Read the LESdelta dictionary
-        virtual void read(const dictionary&);
-
-        // Correct values
-        virtual void correct();
+        //- Read the randomise data
+        virtual bool read(const dictionary&);
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace LESModels
+} // End namespace functionObjects
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

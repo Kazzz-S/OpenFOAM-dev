@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2017-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,54 +23,13 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "densityChange.H"
-#include "addToRunTimeSelectionTable.H"
-#include "phaseSystem.H"
-#include "fvcDdt.H"
-#include "fvcGrad.H"
+#include "interpolationCellPointWallModified.H"
 
-// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace diameterModels
-{
-namespace driftModels
-{
-    defineTypeNameAndDebug(densityChangeDrift, 0);
-    addToRunTimeSelectionTable(driftModel, densityChangeDrift, dictionary);
+    makeInterpolation(interpolationCellPointWallModified);
 }
-}
-}
-
-
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-Foam::diameterModels::driftModels::densityChangeDrift::densityChangeDrift
-(
-    const populationBalanceModel& popBal,
-    const dictionary& dict
-)
-:
-    driftModel(popBal, dict)
-{}
-
-
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-
-void Foam::diameterModels::driftModels::densityChangeDrift::addToDriftRate
-(
-    volScalarField& driftRate,
-    const label i
-)
-{
-    const sizeGroup& fi = popBal_.sizeGroups()[i];
-    volScalarField& rho = const_cast<volScalarField&>(fi.phase().rho()());
-
-    driftRate -= (fvc::ddt(rho) + (fvc::grad(rho)&popBal_.U()))
-       *popBal_.sizeGroups()[i].x()/rho;
-}
-
 
 // ************************************************************************* //

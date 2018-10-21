@@ -95,7 +95,7 @@ inline Foam::scalar Foam::icoPolynomial<Specie, PolySize>::H
     scalar T
 ) const
 {
-    return 0;
+    return p/this->rho(p, T);
 }
 
 
@@ -172,7 +172,7 @@ inline Foam::scalar Foam::icoPolynomial<Specie, PolySize>::CpMCv
     scalar T
 ) const
 {
-    return -(p/sqr(rhoCoeffs_.value(T)))*rhoCoeffs_.derivative(T);
+    return 0;
 }
 
 

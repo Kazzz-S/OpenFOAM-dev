@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2017-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,83 +23,92 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "Stokes2.H"
+#include "fvMesh.H"
+#include "fvMatrix.H"
+#include "geometricOneField.H"
+#include "accelerationSource.H"
 #include "addToRunTimeSelectionTable.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace waveModels
+namespace fv
 {
-    defineTypeNameAndDebug(Stokes2, 0);
-    addToRunTimeSelectionTable(waveModel, Stokes2, objectRegistry);
+    defineTypeNameAndDebug(accelerationSource, 0);
+    addToRunTimeSelectionTable(option, accelerationSource, dictionary);
 }
 }
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::waveModels::Stokes2::Stokes2
+Foam::fv::accelerationSource::accelerationSource
 (
-    const objectRegistry& db,
-    const dictionary& dict
+    const word& name,
+    const word& modelType,
+    const dictionary& dict,
+    const fvMesh& mesh
 )
 :
-    Airy(db, dict)
-{}
-
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::waveModels::Stokes2::~Stokes2()
-{}
-
-
-// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-
-Foam::tmp<Foam::scalarField> Foam::waveModels::Stokes2::elevation
-(
-    const scalar t,
-    const scalarField& x
-) const
+    cellSetOption(name, modelType, dict, mesh),
+    velocity_(nullptr)
 {
-    const scalar kd = k()*depth(), ka = k()*amplitude(t);
-
-    const scalar T = deep() ? 1 : tanh(kd);
-
-    const scalar B22 = (3/sqr(T) - 1)/T/4;
-
-    if (debug)
-    {
-        Info<< "B22 = " << B22 << endl;
-    }
-
-    return
-        Airy::elevation(t, x)
-      + (1/k())*sqr(ka)*B22*cos(2*angle(t, x));
+    read(dict);
 }
 
 
-Foam::tmp<Foam::vector2DField> Foam::waveModels::Stokes2::velocity
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+void Foam::fv::accelerationSource::addSup
 (
-    const scalar t,
-    const vector2DField& xz
-) const
+    fvMatrix<vector>& eqn,
+    const label fieldi
+)
 {
-    const scalar kd = k()*depth(), ka = k()*amplitude(t);
+    add(geometricOneField(), eqn, fieldi);
+}
 
-    const scalar A22ByA11 = deep() ? 0 : 0.375/pow3(sinh(kd));
 
-    if (debug)
+void Foam::fv::accelerationSource::addSup
+(
+    const volScalarField& rho,
+    fvMatrix<vector>& eqn,
+    const label fieldi
+)
+{
+    add(rho, eqn, fieldi);
+}
+
+
+void Foam::fv::accelerationSource::addSup
+(
+    const volScalarField& alpha,
+    const volScalarField& rho,
+    fvMatrix<vector>& eqn,
+    const label fieldi
+)
+{
+    add((alpha*rho)(), eqn, fieldi);
+}
+
+
+bool Foam::fv::accelerationSource::read(const dictionary& dict)
+{
+    if (cellSetOption::read(dict))
     {
-        const scalar A11 = 1/sinh(kd);
-        Info<< "A22 = " << A22ByA11*A11 << endl;
-    }
+        fieldNames_ = wordList(1, coeffs_.lookupOrDefault<word>("U", "U"));
 
-    return
-        Airy::velocity(t, xz)
-      + celerity()*sqr(ka)*A22ByA11*vi(2, t, xz);
+        applied_.setSize(1, false);
+
+        velocity_ = Function1<vector>::New("velocity", dict);
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 

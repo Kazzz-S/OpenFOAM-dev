@@ -10,31 +10,18 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "constant";
-    object      fvOptions;
+    object      setWavesDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-option1
+U.orig
 {
-    type            verticalDamping;
-
-    selectionMode   all;
-
-    origin          (1200 0 0);
-    direction       (1 0 0);
-    scale
-    {
-        type        halfCosineRamp;
-        start       0;
-        duration    600;
-    }
-
-    lambda          0.5;
-
-    timeStart       0;
-    duration        1e6;
+    #include "$FOAM_CASE/0/U.orig";
 }
 
+alpha   alpha.water;
 
-//************************************************************************* //
+UMean   $U.orig.boundaryField.inlet.UMean;
+
+
+// ************************************************************************* //

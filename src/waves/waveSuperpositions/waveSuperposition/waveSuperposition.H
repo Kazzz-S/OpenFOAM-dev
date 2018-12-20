@@ -36,6 +36,7 @@ Usage
         origin     | origin of the wave coordinate system    | yes    |
         direction  | direction of the wave coordinate system | yes    |
         waves      | list of wave models to superimpose      | yes    |
+        UMean      | velocity of the mean flow               | yes    |
         scale      | scale factor in the direction           | no     | None
         crossScale | scale factor perpendicular to the direction | no | None
         heightAboveWave | use the height above the wave as the vertical \\
@@ -63,6 +64,7 @@ Usage
             angle       0;
         }
     );
+    UMean       (2 0 0);
     scale       table ((100 1) (200 0));
     crossScale  constant 1;
     heightAboveWave no;
@@ -92,7 +94,9 @@ class waveSuperposition
 :
     public IOdictionary
 {
-    // Private Data
+protected:
+
+    // Protected Data
 
         //- The origin of the wave coordinate system
         const vector origin_;
@@ -106,6 +110,9 @@ class waveSuperposition
         //- The angle relative to the direction at which the waves propagate
         scalarList waveAngles_;
 
+        //- Mean velocity
+        const autoPtr<Function1<vector>> UMean_;
+
         //- Scaling in the local x-direction
         const autoPtr<Function1<scalar>> scale_;
 
@@ -117,11 +124,12 @@ class waveSuperposition
         const Switch heightAboveWave_;
 
 
-    // Private Member Functions
+    // Protected Member Functions
 
         //- Get the transformation to actual coordinates
         void transformation
         (
+            const scalar t,
             const vectorField& p,
             tensor& axes,
             vectorField& xyz
@@ -153,6 +161,21 @@ class waveSuperposition
 
 public:
 
+    //- Runtime type information
+    TypeName("wave");
+
+
+    // Declare runtime construction
+    declareRunTimeSelectionTable
+    (
+        autoPtr,
+        waveSuperposition,
+        objectRegistry,
+        (const objectRegistry& db),
+        (db)
+    );
+
+
     // Static Data
 
         //- The name of the dictionary
@@ -171,12 +194,6 @@ public:
         //- Construct from a database
         waveSuperposition(const objectRegistry& db);
 
-        //- Construct a copy
-        waveSuperposition(const waveSuperposition& waves);
-
-        //- Construct from a database and gravity
-        waveSuperposition(const objectRegistry& db, const dictionary& dict);
-
 
     //- Destructor
     ~waveSuperposition();
@@ -185,19 +202,39 @@ public:
     // Member Functions
 
         //- Get the height above the waves at a given time and global positions
-        tmp<scalarField> height(const scalar t, const vectorField& p) const;
+        virtual tmp<scalarField> height
+        (
+            const scalar t,
+            const vectorField& p
+        ) const;
 
         //- Get the liquid velocity at a given time and global positions
-        tmp<vectorField> ULiquid(const scalar t, const vectorField& p) const;
+        virtual tmp<vectorField> ULiquid
+        (
+            const scalar t,
+            const vectorField& p
+        ) const;
 
         //- Get the gas velocity at a given time and global positions
-        tmp<vectorField> UGas(const scalar t, const vectorField& p) const;
+        virtual tmp<vectorField> UGas
+        (
+            const scalar t,
+            const vectorField& p
+        ) const;
 
         //- Get the liquid pressure at a given time and global positions
-        tmp<scalarField> pLiquid(const scalar t, const vectorField& p) const;
+        virtual tmp<scalarField> pLiquid
+        (
+            const scalar t,
+            const vectorField& p
+        ) const;
 
         //- Get the gas pressure at a given time and global positions
-        tmp<scalarField> pGas(const scalar t, const vectorField& p) const;
+        virtual tmp<scalarField> pGas
+        (
+            const scalar t,
+            const vectorField& p
+        ) const;
 
         //- Inherit write from regIOobject
         using regIOobject::write;

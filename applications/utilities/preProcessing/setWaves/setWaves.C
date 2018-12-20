@@ -36,7 +36,7 @@ Description
 #include "timeSelector.H"
 #include "uniformDimensionedFields.H"
 #include "volFields.H"
-#include "wallDist.H"
+#include "wallPolyPatch.H"
 #include "waveAlphaFvPatchScalarField.H"
 #include "waveVelocityFvPatchVectorField.H"
 
@@ -91,12 +91,6 @@ int main(int argc, char *argv[])
     const word alphaName = setWavesDict.lookupOrDefault<word>("alpha", "alpha");
     const word UName = setWavesDict.lookupOrDefault<word>("U", "U");
     const bool liquid = setWavesDict.lookupOrDefault<bool>("liquid", true);
-    const dimensionedVector UMean
-    (
-        "UMean",
-        dimVelocity,
-        setWavesDict.lookup("UMean")
-    );
 
     // Get the wave models
     const waveSuperposition& waves = waveSuperposition::New(mesh);
@@ -172,48 +166,53 @@ int main(int argc, char *argv[])
             dimensionedVector("0", dimVelocity, vector::zero)
         );
 
-        // Offset
-        const vector offset = UMean.value()*t;
-
         // Cell centres and points
         const pointField& ccs = mesh.cellCentres();
         const pointField& pts = mesh.points();
 
         // Internal field
-        h.primitiveFieldRef() = waves.height(t, ccs + offset);
-        hp.primitiveFieldRef() = waves.height(t, pts + offset);
-        uGas.primitiveFieldRef() = waves.UGas(t, ccs + offset);
-        uGasp.primitiveFieldRef() = waves.UGas(t, pts + offset);
-        uLiq.primitiveFieldRef() = waves.ULiquid(t, ccs + offset);
-        uLiqp.primitiveFieldRef() = waves.ULiquid(t, pts + offset);
+        h.primitiveFieldRef() = waves.height(t, ccs);
+        hp.primitiveFieldRef() = waves.height(t, pts);
+        uGas.primitiveFieldRef() = waves.UGas(t, ccs);
+        uGasp.primitiveFieldRef() = waves.UGas(t, pts);
+        uLiq.primitiveFieldRef() = waves.ULiquid(t, ccs);
+        uLiqp.primitiveFieldRef() = waves.ULiquid(t, pts);
 
         // Boundary fields
         forAll(mesh.boundary(), patchj)
         {
             const pointField& fcs = mesh.boundary()[patchj].Cf();
-            h.boundaryFieldRef()[patchj] = waves.height(t, fcs + offset);
-            uGas.boundaryFieldRef()[patchj] = waves.UGas(t, fcs + offset);
-            uLiq.boundaryFieldRef()[patchj] = waves.ULiquid(t, fcs + offset);
+            h.boundaryFieldRef()[patchj] = waves.height(t, fcs);
+            uGas.boundaryFieldRef()[patchj] = waves.UGas(t, fcs);
+            uLiq.boundaryFieldRef()[patchj] = waves.ULiquid(t, fcs);
         }
 
-        // Set the fields
-        alpha == levelSetFraction(h, hp, !liquid);
-        U == UMean + levelSetAverage(h, hp, uGas, uGasp, uLiq, uLiqp);
+        // Calculate the fields
+        volScalarField alphaNoBCs(levelSetFraction(h, hp, !liquid));
+        volVectorField UNoBCs(levelSetAverage(h, hp, uGas, uGasp, uLiq, uLiqp));
 
-        // Set the boundary fields
+        // Set the wave and non-wall fixed-value patch fields
         forAll(mesh.boundary(), patchi)
         {
+            const polyPatch& patch = mesh.boundaryMesh()[patchi];
+
             fvPatchScalarField& alphap = alpha.boundaryFieldRef()[patchi];
-            if (isA<waveAlphaFvPatchScalarField>(alphap))
-            {
-                alphap == refCast<waveAlphaFvPatchScalarField>(alphap).alpha();
-            }
             fvPatchVectorField& Up = U.boundaryFieldRef()[patchi];
-            if (isA<waveVelocityFvPatchVectorField>(Up))
+            if
+            (
+               !isA<wallPolyPatch>(patch)
+             || isA<waveAlphaFvPatchScalarField>(alphap)
+             || isA<waveVelocityFvPatchVectorField>(Up)
+            )
             {
-                Up == refCast<waveVelocityFvPatchVectorField>(Up).U();
+                alphap == alphaNoBCs.boundaryField()[patchi];
+                Up == UNoBCs.boundaryField()[patchi];
             }
         }
+
+        // Set the internal fields and all non-fixed value patch fields
+        alpha = alphaNoBCs;
+        U = UNoBCs;
 
         // Output
         Info<< "Writing " << alpha.name() << nl;

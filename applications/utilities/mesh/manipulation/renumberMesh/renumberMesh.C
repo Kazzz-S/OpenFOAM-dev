@@ -68,19 +68,11 @@ tmp<volScalarField> createScalarField
 {
     tmp<volScalarField> tfld
     (
-        new volScalarField
+        volScalarField::New
         (
-            IOobject
-            (
-                name,
-                mesh.time().timeName(),
-                mesh,
-                IOobject::NO_READ,
-                IOobject::AUTO_WRITE,
-                false
-            ),
+            name,
             mesh,
-            dimensionedScalar("zero", dimless, 0),
+            dimensionedScalar(dimless, 0),
             zeroGradientFvPatchScalarField::typeName
         )
     );

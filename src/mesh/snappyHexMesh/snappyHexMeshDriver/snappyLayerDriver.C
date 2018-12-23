@@ -857,18 +857,11 @@ Foam::snappyLayerDriver::makeLayerDisplacementField
     // postprocessable field.
     tmp<pointVectorField> tfld
     (
-        new pointVectorField
+        pointVectorField::New
         (
-            IOobject
-            (
-                "pointDisplacement",
-                mesh.time().timeName(),
-                mesh,
-                IOobject::NO_READ,
-                IOobject::AUTO_WRITE
-            ),
+            "pointDisplacement",
             pMesh,
-            dimensionedVector("displacement", dimLength, Zero),
+            dimensionedVector(dimLength, Zero),
             patchFieldTypes,
             actualPatchTypes
         )
@@ -2653,7 +2646,7 @@ bool Foam::snappyLayerDriver::writeLayerData
                     false
                 ),
                 mesh,
-                dimensionedScalar("zero", dimless, 0),
+                dimensionedScalar(dimless, 0),
                 fixedValueFvPatchScalarField::typeName
             );
             const polyBoundaryMesh& pbm = mesh.boundaryMesh();
@@ -2691,7 +2684,7 @@ bool Foam::snappyLayerDriver::writeLayerData
                     false
                 ),
                 mesh,
-                dimensionedScalar("zero", dimless, 0),
+                dimensionedScalar(dimless, 0),
                 fixedValueFvPatchScalarField::typeName
             );
 
@@ -2726,7 +2719,7 @@ bool Foam::snappyLayerDriver::writeLayerData
                     false
                 ),
                 mesh,
-                dimensionedScalar("zero", dimless, 0),
+                dimensionedScalar(dimless, 0),
                 fixedValueFvPatchScalarField::typeName
             );
 

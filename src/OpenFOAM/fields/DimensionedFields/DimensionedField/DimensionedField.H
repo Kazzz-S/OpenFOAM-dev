@@ -236,6 +236,38 @@ public:
         //- Clone
         tmp<DimensionedField<Type, GeoMesh>> clone() const;
 
+        //- Return a temporary field constructed from name, mesh
+        //  and dimensionSet
+        static tmp<DimensionedField<Type, GeoMesh>> New
+        (
+            const word& name,
+            const Mesh& mesh,
+            const dimensionSet&
+        );
+
+        //- Return a temporary field constructed from name, mesh
+        //  and dimensionType providing dimensions and value
+        static tmp<DimensionedField<Type, GeoMesh>> New
+        (
+            const word& name,
+            const Mesh& mesh,
+            const dimensioned<Type>&
+        );
+
+        //- Return a temporary field constructed from name and a field
+        static tmp<DimensionedField<Type, GeoMesh>> New
+        (
+            const word& newName,
+            const DimensionedField<Type, GeoMesh>&
+        );
+
+        //- Return renamed temporary field
+        static tmp<DimensionedField<Type, GeoMesh>> New
+        (
+            const word& newName,
+            const tmp<DimensionedField<Type, GeoMesh>>&
+        );
+
 
     //- Destructor
     virtual ~DimensionedField();

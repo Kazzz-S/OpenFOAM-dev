@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,32 +22,46 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::calculatedFvPatchField
+    Foam::waveInletOutletFvPatchField
 
 Description
-    This boundary condition is not designed to be evaluated; it is assmued
-    that the value is assigned via field assignment, and not via a call to
-    e.g. \c updateCoeffs or \c evaluate.
+    This boundary condition provides an inlet-outlet condition with differing
+    inlet values on either side of a wave interface. All the wave modelling
+    parameters are obtained from a centrally registered waveSuperposition
+    class.
 
 Usage
+    \table
+        Property        | Description                | Req'd? | Default
+        phi             | Name of the flux field     | no     | phi
+        inletValueAbove | inlet value above the wave | no     | None
+        inletValueBelow | inlet value below the wave | no     | None
+    \endtable
+
     Example of the boundary condition specification:
     \verbatim
     <patchName>
     {
-        type            calculated;
-        value           uniform (0 0 0);    // Required value entry
+        type        waveInletOutlet;
+        phi         phi;
+        inletValueAbove 0.01;
+        inletValueBelow table ((0 0.01) (10 0.1));
     }
     \endverbatim
 
+See also
+    Foam::waveSuperposition
+
 SourceFiles
-    calculatedFvPatchField.C
+    waveInletOutletFvPatchField.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef calculatedFvPatchField_H
-#define calculatedFvPatchField_H
+#ifndef waveInletOutletFvPatchField_H
+#define waveInletOutletFvPatchField_H
 
-#include "fvPatchField.H"
+#include "mixedFvPatchField.H"
+#include "Function1.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -55,53 +69,62 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                   Class calculatedFvPatchField Declaration
+                Class waveInletOutletFvPatchField Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class Type>
-class calculatedFvPatchField
+class waveInletOutletFvPatchField
 :
-    public fvPatchField<Type>
+    public mixedFvPatchField<Type>
 {
+    // Private data
+
+        //- Inlet value above the wave
+        const autoPtr<Function1<Type>> inletValueAbove_;
+
+        //- Inlet value below the wave
+        const autoPtr<Function1<Type>> inletValueBelow_;
+
+        //- Name of flux field
+        const word phiName_;
+
 
 public:
 
     //- Runtime type information
-    TypeName("calculated");
+    TypeName("waveInletOutlet");
 
 
     // Constructors
 
         //- Construct from patch and internal field
-        calculatedFvPatchField
+        waveInletOutletFvPatchField
         (
             const fvPatch&,
             const DimensionedField<Type, volMesh>&
         );
 
         //- Construct from patch, internal field and dictionary
-        calculatedFvPatchField
+        waveInletOutletFvPatchField
         (
             const fvPatch&,
             const DimensionedField<Type, volMesh>&,
-            const dictionary&,
-            const bool valueRequired=true
+            const dictionary&
         );
 
-        //- Construct by mapping given patchField<Type> onto a new patch
-        calculatedFvPatchField
+        //- Construct by mapping the given field onto a new patch
+        waveInletOutletFvPatchField
         (
-            const calculatedFvPatchField<Type>&,
+            const waveInletOutletFvPatchField<Type>&,
             const fvPatch&,
             const DimensionedField<Type, volMesh>&,
-            const fvPatchFieldMapper&,
-            const bool mappingRequired=true
+            const fvPatchFieldMapper&
         );
 
         //- Construct as copy
-        calculatedFvPatchField
+        waveInletOutletFvPatchField
         (
-            const calculatedFvPatchField<Type>&
+            const waveInletOutletFvPatchField<Type>&
         );
 
         //- Construct and return a clone
@@ -109,14 +132,14 @@ public:
         {
             return tmp<fvPatchField<Type>>
             (
-                new calculatedFvPatchField<Type>(*this)
+                new waveInletOutletFvPatchField<Type>(*this)
             );
         }
 
         //- Construct as copy setting internal field reference
-        calculatedFvPatchField
+        waveInletOutletFvPatchField
         (
-            const calculatedFvPatchField<Type>&,
+            const waveInletOutletFvPatchField<Type>&,
             const DimensionedField<Type, volMesh>&
         );
 
@@ -128,48 +151,19 @@ public:
         {
             return tmp<fvPatchField<Type>>
             (
-                new calculatedFvPatchField<Type>(*this, iF)
+                new waveInletOutletFvPatchField<Type>
+                (
+                    *this,
+                    iF
+                )
             );
         }
 
 
     // Member functions
 
-        // Attributes
-
-            //- Return true if this patch field fixes a value.
-            //  Needed to check if a level has to be specified while solving
-            //  Poissons equations.
-            virtual bool fixesValue() const
-            {
-                return true;
-            }
-
-
-        // Evaluation functions
-
-            //- Return the matrix diagonal coefficients corresponding to the
-            //  evaluation of the value of this patchField with given weights
-            virtual tmp<Field<Type>> valueInternalCoeffs
-            (
-                const tmp<scalarField>&
-            ) const;
-
-            //- Return the matrix source coefficients corresponding to the
-            //  evaluation of the value of this patchField with given weights
-            virtual tmp<Field<Type>> valueBoundaryCoeffs
-            (
-                const tmp<scalarField>&
-            ) const;
-
-            //- Return the matrix diagonal coefficients corresponding to the
-            //  evaluation of the gradient of this patchField
-            tmp<Field<Type>> gradientInternalCoeffs() const;
-
-            //- Return the matrix source coefficients corresponding to the
-            //  evaluation of the gradient of this patchField
-            tmp<Field<Type>> gradientBoundaryCoeffs() const;
-
+        //- Update the coefficients associated with the patch field
+        virtual void updateCoeffs();
 
         //- Write
         virtual void write(Ostream&) const;
@@ -183,7 +177,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-    #include "calculatedFvPatchField.C"
+    #include "waveInletOutletFvPatchField.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

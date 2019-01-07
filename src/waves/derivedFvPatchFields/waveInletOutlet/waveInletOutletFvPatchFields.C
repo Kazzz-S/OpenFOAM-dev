@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2015-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,68 +23,21 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "localEulerDdtScheme.H"
-#include "fvMesh.H"
-
-// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
-
-Foam::word Foam::fv::localEulerDdt::rDeltaTName("rDeltaT");
-Foam::word Foam::fv::localEulerDdt::rDeltaTfName("rDeltaTf");
-Foam::word Foam::fv::localEulerDdt::rSubDeltaTName("rSubDeltaT");
+#include "waveInletOutletFvPatchFields.H"
+#include "addToRunTimeSelectionTable.H"
+#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool Foam::fv::localEulerDdt::enabled(const fvMesh& mesh)
+namespace Foam
 {
-    return
-        word(mesh.ddtScheme("default"))
-     == fv::localEulerDdtScheme<scalar>::typeName;
-}
 
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-const Foam::volScalarField& Foam::fv::localEulerDdt::localRDeltaT
-(
-    const fvMesh& mesh
-)
-{
-    return mesh.objectRegistry::lookupObject<volScalarField>
-    (
-        mesh.time().subCycling() ? rSubDeltaTName : rDeltaTName
-    );
-}
+makePatchFields(waveInletOutlet);
 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-const Foam::surfaceScalarField& Foam::fv::localEulerDdt::localRDeltaTf
-(
-    const fvMesh& mesh
-)
-{
-    return mesh.objectRegistry::lookupObject<surfaceScalarField>
-    (
-        rDeltaTfName
-    );
-}
-
-
-Foam::tmp<Foam::volScalarField> Foam::fv::localEulerDdt::localRSubDeltaT
-(
-    const fvMesh& mesh,
-    const label nAlphaSubCycles
-)
-{
-    return tmp<volScalarField>
-    (
-        new volScalarField
-        (
-            rSubDeltaTName,
-            nAlphaSubCycles
-           *mesh.objectRegistry::lookupObject<volScalarField>
-            (
-                rDeltaTName
-            )
-        )
-    );
-}
-
+} // End namespace Foam
 
 // ************************************************************************* //

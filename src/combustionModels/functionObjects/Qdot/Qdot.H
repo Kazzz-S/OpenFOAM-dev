@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2016-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,75 +22,84 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::dynamicMotionSolverListFvMesh
+    Foam::functionObjects::Qdot
 
 Description
-    Foam::dynamicMotionSolverListFvMesh
+    Calculates and outputs the heat release rate for the current combustion
+    model.
 
 SourceFiles
-    dynamicMotionSolverListFvMesh.C
+    Qdot.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef dynamicMotionSolverListFvMesh_H
-#define dynamicMotionSolverListFvMesh_H
+#ifndef functionObjects_Qdot_H
+#define functionObjects_Qdot_H
 
-#include "dynamicFvMesh.H"
+#include "fvMeshFunctionObject.H"
+#include "writeLocalObjects.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-
-class motionSolver;
+namespace functionObjects
+{
 
 /*---------------------------------------------------------------------------*\
-                           Class dynamicMotionSolverListFvMesh Declaration
+                          Class Qdot Declaration
 \*---------------------------------------------------------------------------*/
 
-class dynamicMotionSolverListFvMesh
+class Qdot
 :
-    public dynamicFvMesh
+    public fvMeshFunctionObject,
+    public writeLocalObjects
 {
+private:
+
     // Private data
 
-        PtrList<motionSolver> motionSolvers_;
-
-
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construct
-        dynamicMotionSolverListFvMesh(const dynamicMotionSolverListFvMesh&);
-
-        //- Disallow default bitwise assignment
-        void operator=(const dynamicMotionSolverListFvMesh&);
+        //- The name of the phase
+        word phaseName_;
 
 
 public:
 
     //- Runtime type information
-    TypeName("dynamicMotionSolverListFvMesh");
+    TypeName("Qdot");
 
 
     // Constructors
 
-        //- Construct from IOobject
-        dynamicMotionSolverListFvMesh(const IOobject& io);
+        //- Construct from Time and dictionary
+        Qdot
+        (
+            const word& name,
+            const Time& runTime,
+            const dictionary& dict
+        );
 
 
     //- Destructor
-    ~dynamicMotionSolverListFvMesh();
+    virtual ~Qdot();
 
 
     // Member Functions
 
-        //- Dummy update function which does not change the mesh
-        virtual bool update();
+        //- Read the data
+        virtual bool read(const dictionary&);
+
+        //- Calculate the Qdot field
+        virtual bool execute();
+
+        //- Do nothing
+        virtual bool write();
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace functionObjects
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

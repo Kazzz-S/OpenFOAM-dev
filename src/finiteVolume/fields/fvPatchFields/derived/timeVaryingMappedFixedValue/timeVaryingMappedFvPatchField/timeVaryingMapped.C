@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2017-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,46 +23,13 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "ramp.H"
+#include "timeVaryingMappedFvPatchField.H"
 
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-void Foam::Function1Types::ramp::read(const dictionary& coeffs)
+namespace Foam
 {
-    start_ = coeffs.lookupOrDefault<scalar>("start", 0);
-    duration_ = coeffs.lookupType<scalar>("duration");
-}
-
-
-Foam::Function1Types::ramp::ramp
-(
-    const word& entryName,
-    const dictionary& dict
-)
-:
-    Function1<scalar>(entryName)
-{
-    read(dict);
-}
-
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::Function1Types::ramp::~ramp()
-{}
-
-
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-void Foam::Function1Types::ramp::writeData(Ostream& os) const
-{
-    Function1<scalar>::writeData(os);
-    os  << token::END_STATEMENT << nl;
-    os  << indent << word(this->name() + "Coeffs") << nl;
-    os  << indent << token::BEGIN_BLOCK << incrIndent << nl;
-    writeEntry(os, "start", start_);
-    writeEntry(os, "duration", duration_);
-    os  << decrIndent << indent << token::END_BLOCK << endl;
+    defineTypeNameAndDebug(timeVaryingMapped, 0);
 }
 
 

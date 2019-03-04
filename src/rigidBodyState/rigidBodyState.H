@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2017-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,17 +22,17 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::functionObjects::sixDoFRigidBodyState
+    Foam::functionObjects::rigidBodyState
 
 Description
-    Writes the 6-DoF motion state.
+    Writes the rigid body motion state.
 
     Example of function object specification:
     \verbatim
-    sixDoFRigidBodyState
+    rigidBodyState
     {
-        type           sixDoFRigidBodyState;
-        libs           ("libsixDoFRigidBodyState.so");
+        type           rigidBodyState;
+        libs           ("librigidBodyState.so");
         angleFormat    degrees;
     }
     \endverbatim
@@ -40,7 +40,7 @@ Description
 Usage
     \table
         Property     | Description                  | Required | Default value
-        type         | type name: sixDoFRigidBodyState    | yes |
+        type         | type name: rigidBodyState    | yes |
         angleFormat  | degrees or radians           | no       | radian
     \endtable
 
@@ -49,31 +49,29 @@ See also
     Foam::functionObjects::logFiles
 
 SourceFiles
-    sixDoFRigidBodyState.C
+    rigidBodyState.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef sixDoFRigidBodyState_H
-#define sixDoFRigidBodyState_H
+#ifndef rigidBodyState_H
+#define rigidBodyState_H
 
 #include "fvMeshFunctionObject.H"
-#include "vector.H"
 #include "logFiles.H"
+#include "rigidBodyMotion.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    class sixDoFRigidBodyMotion;
-
 namespace functionObjects
 {
 
 /*---------------------------------------------------------------------------*\
-                   Class sixDoFRigidBodyState Declaration
+                   Class rigidBodyState Declaration
 \*---------------------------------------------------------------------------*/
 
-class sixDoFRigidBodyState
+class rigidBodyState
 :
     public fvMeshFunctionObject,
     public logFiles
@@ -82,16 +80,17 @@ class sixDoFRigidBodyState
 
         word angleFormat_;
 
+        //- List of the names of the rigid bodies
+        wordList names_;
+
 
     // Private Member Functions
 
-        const sixDoFRigidBodyMotion& motion() const;
-
         //- Disallow default bitwise copy construct
-        sixDoFRigidBodyState(const sixDoFRigidBodyState&);
+        rigidBodyState(const rigidBodyState&);
 
         //- Disallow default bitwise assignment
-        void operator=(const sixDoFRigidBodyState&);
+        void operator=(const rigidBodyState&);
 
 
 protected:
@@ -105,13 +104,13 @@ protected:
 public:
 
     //- Runtime type information
-    TypeName("sixDoFRigidBodyState");
+    TypeName("rigidBodyState");
 
 
     // Constructors
 
         //- Construct from Time and dictionary
-        sixDoFRigidBodyState
+        rigidBodyState
         (
             const word& name,
             const Time& runTime,
@@ -120,24 +119,20 @@ public:
 
 
     //- Destructor
-    virtual ~sixDoFRigidBodyState();
+    virtual ~rigidBodyState();
 
 
     // Member Functions
 
-        //- Return the current body velocity
-        vector velocity() const;
+        const RBD::rigidBodyMotion& motion() const;
 
-        //- Return the current body angular velocity
-        vector angularVelocity() const;
-
-        //- Read the sixDoFRigidBodyState data
+        //- Read the rigidBodyState data
         virtual bool read(const dictionary&);
 
         //- Execute, currently does nothing
         virtual bool execute();
 
-        //- Write the sixDoFRigidBodyState
+        //- Write the rigidBodyState
         virtual bool write();
 };
 

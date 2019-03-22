@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2012-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,61 +23,69 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "velocityMotionSolver.H"
-#include "mapPolyMesh.H"
+#include "SchillerNaumannDragForce.H"
 
-// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
+// * * * * * * * * * * * * *  Static Member Functions  * * * * * * * * * * * //
 
-namespace Foam
+template<class CloudType>
+Foam::scalar Foam::SchillerNaumannDragForce<CloudType>::CdRe(const scalar Re)
 {
-    defineTypeNameAndDebug(velocityMotionSolver, 0);
+    if (Re > 1000.0)
+    {
+        return 0.44*Re;
+    }
+    else
+    {
+        return 24.0*(1.0 + 0.15*pow(Re, 0.687));
+    }
 }
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::velocityMotionSolver::velocityMotionSolver
+template<class CloudType>
+Foam::SchillerNaumannDragForce<CloudType>::SchillerNaumannDragForce
 (
-    const polyMesh& mesh,
-    const dictionary& dict,
-    const word& type
+    CloudType& owner,
+    const fvMesh& mesh,
+    const dictionary& dict
 )
 :
-    motionSolver(mesh, dict, type),
-    pointMotionU_
-    (
-        IOobject
-        (
-            "pointMotionU",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::MUST_READ,
-            IOobject::AUTO_WRITE
-        ),
-        pointMesh::New(mesh)
-    )
+    ParticleForce<CloudType>(owner, mesh, dict, typeName, false)
+{}
+
+
+template<class CloudType>
+Foam::SchillerNaumannDragForce<CloudType>::SchillerNaumannDragForce
+(
+    const SchillerNaumannDragForce<CloudType>& df
+)
+:
+    ParticleForce<CloudType>(df)
 {}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-Foam::velocityMotionSolver::~velocityMotionSolver()
+template<class CloudType>
+Foam::SchillerNaumannDragForce<CloudType>::~SchillerNaumannDragForce()
 {}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void Foam::velocityMotionSolver::movePoints(const pointField& p)
+template<class CloudType>
+Foam::forceSuSp Foam::SchillerNaumannDragForce<CloudType>::calcCoupled
+(
+    const typename CloudType::parcelType& p,
+    const typename CloudType::parcelType::trackingData& td,
+    const scalar dt,
+    const scalar mass,
+    const scalar Re,
+    const scalar muc
+) const
 {
-    // No local data that needs adapting.
-}
-
-
-void Foam::velocityMotionSolver::updateMesh(const mapPolyMesh& mpm)
-{
-    // pointMesh already updates pointFields.
-
-    motionSolver::updateMesh(mpm);
+    return forceSuSp(Zero, mass*0.75*muc*CdRe(Re)/(p.rho()*sqr(p.d())));
 }
 
 

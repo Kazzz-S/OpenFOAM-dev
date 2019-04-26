@@ -209,7 +209,7 @@ void Foam::cylindrical::updateCells
         vector dir = cc[celli] - origin_;
         dir /= mag(dir) + vSmall;
 
-        R[celli] = this->R(dir);
+        R[i] = this->R(dir);
     }
 }
 
@@ -318,8 +318,7 @@ Foam::tmp<Foam::tensorField> Foam::cylindrical::transformTensor
     tensorField& t = tt.ref();
     forAll(cellMap, i)
     {
-        const label celli = cellMap[i];
-        t[i] = R[celli] & tf[i] & Rtr[celli];
+        t[i] = R[i] & tf[i] & Rtr[i];
     }
 
     return tt;

@@ -196,9 +196,9 @@ void Foam::sixDoFRigidBodyMotionSolver::solve()
 
     dimensionedVector g("g", dimAcceleration, Zero);
 
-    if (t.foundObject<uniformDimensionedVectorField>("g"))
+    if (mesh().foundObject<uniformDimensionedVectorField>("g"))
     {
-        g = t.lookupObject<uniformDimensionedVectorField>("g");
+        g = mesh().lookupObject<uniformDimensionedVectorField>("g");
     }
     else if (coeffDict().found("g"))
     {
@@ -264,7 +264,7 @@ bool Foam::sixDoFRigidBodyMotionSolver::writeObject
     IOstream::streamFormat fmt,
     IOstream::versionNumber ver,
     IOstream::compressionType cmp,
-    const bool valid
+    const bool write
 ) const
 {
     IOdictionary dict

@@ -9,48 +9,48 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volVectorField;
+    class       pointVectorField;
     location    "0";
-    object      U;
+    object      pointDisplacement;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-UMean 1.668;
+dimensions      [0 1 0 0 0 0 0];
 
-dimensions      [0 1 -1 0 0 0 0];
-
-internalField   uniform (#neg $UMean 0 0);
+internalField   uniform (0 0 0);
 
 boundaryField
 {
-    //- Set patchGroups for constraint patches
-    #includeEtc "caseDicts/setConstraintTypes"
-
+    atmosphere
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
     inlet
     {
         type            fixedValue;
-        value           $internalField;
+        value           uniform (0 0 0);
     }
-
     outlet
     {
-        type            outletPhaseMeanVelocity;
-        alpha           alpha.water;
-        UnMean          $UMean;
-        value           $internalField;
-    }
-
-    atmosphere
-    {
-        type            pressureInletOutletVelocity;
-        tangentialVelocity $internalField;
+        type            fixedValue;
         value           uniform (0 0 0);
     }
-
+    bottom
+    {
+        type            symmetryPlane;
+    }
+    side
+    {
+        type            symmetryPlane;
+    }
+    midPlane
+    {
+        type            symmetryPlane;
+    }
     hull
     {
-        type            movingWallVelocity;
-        value           uniform (0 0 0);
+        type            calculated;
     }
 }
 

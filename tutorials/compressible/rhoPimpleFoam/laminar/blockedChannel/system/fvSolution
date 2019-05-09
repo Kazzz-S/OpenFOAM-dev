@@ -9,44 +9,52 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    location    "0";
-    object      nut;
+    class       dictionary;
+    location    "system";
+    object      fvSolution;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 2 -1 0 0 0 0];
-
-internalField   uniform 5e-07;
-
-boundaryField
+solvers
 {
-    //- Set patchGroups for constraint patches
-    #includeEtc "caseDicts/setConstraintTypes"
-
-    inlet
+    "rho.*"
     {
-        type            fixedValue;
-        value           $internalField;
+        solver           diagonal;
     }
 
-    outlet
+    p
     {
-        type            zeroGradient;
+        solver           GAMG;
+        smoother         DICGaussSeidel;
+        tolerance        1e-7;
+        relTol           0.01;
     }
 
-    atmosphere
+    pFinal
     {
-        type            zeroGradient;
+        $p;
+        relTol          0;
     }
 
-    hull
+    "(U|e|tracer)"
     {
-        type            nutkRoughWallFunction;
-        Ks              uniform 100e-6;
-        Cs              uniform 0.5;
-        value           $internalField;
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-05;
+        relTol          0.1;
     }
+
+    "(U|e|tracer)Final"
+    {
+        $U;
+        relTol          0;
+    }
+}
+
+PIMPLE
+{
+    nNonOrthogonalCorrectors 0;
+    nCorrectors         2;
 }
 
 

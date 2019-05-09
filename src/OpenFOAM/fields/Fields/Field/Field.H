@@ -30,7 +30,6 @@ Description
 SourceFiles
     FieldFunctions.H
     FieldFunctionsM.H
-    FieldMapper.H
     FieldM.H
     Field.C
     FieldFunctions.C
@@ -70,7 +69,6 @@ Ostream& operator<<(Ostream&, const Field<Type>&);
 template<class Type>
 Ostream& operator<<(Ostream&, const tmp<Field<Type>>&);
 
-class FieldMapper;
 class dictionary;
 
 /*---------------------------------------------------------------------------*\
@@ -83,6 +81,15 @@ class Field
     public tmp<Field<Type>>::refCount,
     public List<Type>
 {
+    // Private member functions
+
+        void doMap
+        (
+            const UList<Type>& mapF,
+            const labelListList& mapAddressing,
+            const scalarListList& mapWeights
+        );
+
 
 public:
 
@@ -162,60 +169,6 @@ public:
             const scalarListList& weights
         );
 
-        //- Construct by mapping from the given field
-        Field
-        (
-            const UList<Type>& mapF,
-            const FieldMapper& map,
-            const bool applyFlip = true
-        );
-
-        //- Construct by mapping from the given field
-        Field
-        (
-            const UList<Type>& mapF,
-            const FieldMapper& map,
-            const Type& defaultValue,
-            const bool applyFlip = true
-        );
-
-        //- Construct by mapping from the given field
-        Field
-        (
-            const UList<Type>& mapF,
-            const FieldMapper& map,
-            const UList<Type>& defaultValues,
-            const bool applyFlip = true
-        );
-
-        //- Construct by mapping from the given tmp field
-        Field
-        (
-            const tmp<Field<Type>>& tmapF,
-            const FieldMapper& map,
-            const bool applyFlip = true
-        );
-
-        //- Construct by mapping from the given tmp field. Supplied uniform
-        //  value for unmapped items
-        Field
-        (
-            const tmp<Field<Type>>& tmapF,
-            const FieldMapper& map,
-            const Type& defaultValue,
-            const bool applyFlip = true
-        );
-
-        //- Construct by mapping from the given tmp field. Supplied values
-        //  for unmapped items
-        Field
-        (
-            const tmp<Field<Type>>& tmapF,
-            const FieldMapper& map,
-            const UList<Type>& defaultValues,
-            const bool applyFlip = true
-        );
-
         //- Construct as copy
         Field(const Field<Type>&);
 
@@ -276,29 +229,6 @@ public:
             const tmp<Field<Type>>& tmapF,
             const labelListList& mapAddressing,
             const scalarListList& weights
-        );
-
-        //- Map from the given field
-        void map
-        (
-            const UList<Type>& mapF,
-            const FieldMapper& map,
-            const bool applyFlip = true
-        );
-
-        //- Map from the given tmp field
-        void map
-        (
-            const tmp<Field<Type>>& tmapF,
-            const FieldMapper& map,
-            const bool applyFlip = true
-        );
-
-        //- Map from self
-        void autoMap
-        (
-            const FieldMapper& map,
-            const bool applyFlip = true
         );
 
         //- 1 to 1 reverse-map from the given field

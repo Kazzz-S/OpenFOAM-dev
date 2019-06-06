@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -81,15 +81,6 @@ private:
        label nElmts_;
 
 
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construct
-        DLListBase(const DLListBase&);
-
-        //- Disallow default bitwise assignment
-        void operator=(const DLListBase&);
-
-
 public:
 
     // Forward declaration of STL iterators
@@ -111,6 +102,9 @@ public:
 
         //- Construct given initial entry
         inline DLListBase(link*);
+
+        //- Disallow default bitwise copy construction
+        DLListBase(const DLListBase&) = delete;
 
 
     //- Destructor
@@ -176,6 +170,13 @@ public:
             //  and annul the argument list.
             inline void transfer(DLListBase&);
 
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const DLListBase&) = delete;
+
+
     // STL iterator
 
         //- An STL-conforming iterator
@@ -205,6 +206,9 @@ public:
 
             //- Construct for a given DLListBase and link
             inline iterator(DLListBase&, link*);
+
+            //- Copy constructor
+            inline iterator(const iterator&) = default;
 
             // Member operators
 
@@ -244,6 +248,9 @@ public:
             //- Construct from a non-const iterator
             inline const_iterator(const iterator&);
 
+            //- Copy constructor
+            inline const_iterator(const const_iterator&) = default;
+
             // Member operators
 
                 inline void operator=(const const_iterator&);
@@ -281,6 +288,12 @@ public:
 
             //- Construct for a given DLListBase and link
             inline const_reverse_iterator(const DLListBase&, const link*);
+
+            //- Copy constructor
+            inline const_reverse_iterator
+            (
+                const const_reverse_iterator&
+            ) = default;
 
             // Member operators
 

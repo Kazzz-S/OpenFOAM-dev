@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -104,9 +104,6 @@ public:
             const dictionary& dict,
             const label index
         );
-
-        //- Construct as copy
-        surfZone(const surfZone&);
 
         //- Construct from another zone, resetting the index
         surfZone(const surfZone&, const label index);

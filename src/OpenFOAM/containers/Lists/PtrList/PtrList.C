@@ -68,9 +68,9 @@ Foam::PtrList<T>::PtrList(const PtrList<T>& a, const CloneArg& cloneArg)
 
 
 template<class T>
-Foam::PtrList<T>::PtrList(const Xfer<PtrList<T>>& lst)
+Foam::PtrList<T>::PtrList(PtrList<T>&& lst)
 {
-    transfer(lst());
+    transfer(lst);
 }
 
 
@@ -256,9 +256,14 @@ void Foam::PtrList<T>::shuffle(const labelUList& newToOld)
         if (oldI >= 0 && oldI < this->size())
         {
             newPtrs_[newI] = this->ptrs_[oldI];
+            this->ptrs_[oldI] = nullptr;
         }
     }
 
+    // Delete all remaining pointers
+    clear();
+
+    // Take over new pointers
     this->ptrs_.transfer(newPtrs_);
 }
 
@@ -300,6 +305,19 @@ void Foam::PtrList<T>::operator=(const PtrList<T>& a)
     }
 }
 
+
+template<class T>
+void Foam::PtrList<T>::operator=(PtrList<T>&& a)
+{
+    if (this == &a)
+    {
+        FatalErrorInFunction
+            << "attempted assignment to self for type " << typeid(T).name()
+            << abort(FatalError);
+    }
+
+    transfer(a);
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

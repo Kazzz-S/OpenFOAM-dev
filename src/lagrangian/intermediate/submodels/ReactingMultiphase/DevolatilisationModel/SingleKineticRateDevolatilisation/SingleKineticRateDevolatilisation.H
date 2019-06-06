@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -106,14 +106,6 @@ class SingleKineticRateDevolatilisation
                 E_(readScalar(is))
             {}
 
-            //- Construct as copy
-            volatileData(const volatileData& vd)
-            :
-                name_(vd.name_),
-                A1_(vd.A1_),
-                E_(vd.E_)
-            {}
-
 
         //- Destructor
         ~volatileData()
@@ -201,12 +193,6 @@ public:
         (
             const dictionary& dict,
             CloudType& owner
-        );
-
-        //- Construct copy
-        SingleKineticRateDevolatilisation
-        (
-            const SingleKineticRateDevolatilisation<CloudType>& dm
         );
 
         //- Construct and return a clone

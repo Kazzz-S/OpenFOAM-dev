@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -44,6 +44,7 @@ Usage
         roughnessHeight 1e-5;
         roughnessConstant 0.5;
         roughnessFactor 1;
+        value           uniform 0;
     }
     \endverbatim
 
@@ -130,7 +131,7 @@ public:
             const fvPatchFieldMapper&
         );
 
-        //- Construct as copy
+        //- Copy constructor
         nutURoughWallFunctionFvPatchScalarField
         (
             const nutURoughWallFunctionFvPatchScalarField&
@@ -145,7 +146,7 @@ public:
             );
         }
 
-        //- Construct as copy setting internal field reference
+        //- Copy constructor setting internal field reference
         nutURoughWallFunctionFvPatchScalarField
         (
             const nutURoughWallFunctionFvPatchScalarField&,

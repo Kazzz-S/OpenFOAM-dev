@@ -50,6 +50,7 @@ Description
             C1          1.44;
             C2          1.92;
             C3          C2;
+            Cp          0.25; // Bubble generated turbulence
             sigmak      1.0;
             sigmaEps    1.3;
         }
@@ -82,7 +83,7 @@ class mixtureKEpsilon
 :
     public eddyViscosity<RASModel<BasicTurbulenceModel>>
 {
-    // Private data
+    // Private Data
 
         mutable mixtureKEpsilon<BasicTurbulenceModel> *liquidTurbulencePtr_;
 

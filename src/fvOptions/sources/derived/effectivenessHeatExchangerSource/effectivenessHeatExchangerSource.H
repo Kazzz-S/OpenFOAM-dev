@@ -53,7 +53,7 @@ Description
     where:
     \vartable
         Q_c     | source for cell
-        V_c     | volume of the cell [m3]
+        V_c     | volume of the cell [m^3]
         U_c     | local cell velocity [m/s]
         T_c     | local call temperature [K]
         T_{ref} | min or max(T) in cell zone depending on the sign of Q_t [K]
@@ -197,15 +197,6 @@ private:
 
     // Private Member Functions
 
-        //- Disallow default bitwise copy construction
-        effectivenessHeatExchangerSource
-        (
-            const effectivenessHeatExchangerSource&
-        );
-
-        //- Disallow default bitwise assignment
-        void operator=(const effectivenessHeatExchangerSource&) = delete;
-
         //- Initialise heat exchanger source model
         void initialise();
 
@@ -228,6 +219,12 @@ public:
             const word& modelType,
             const dictionary& dict,
             const fvMesh& mesh
+        );
+
+        //- Disallow default bitwise copy construction
+        effectivenessHeatExchangerSource
+        (
+            const effectivenessHeatExchangerSource&
         );
 
 
@@ -266,6 +263,12 @@ public:
 
             //- Read dictionary
             virtual bool read(const dictionary& dict);
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const effectivenessHeatExchangerSource&) = delete;
 };
 
 

@@ -60,7 +60,7 @@ class constantRadiation
 {
     // Private Data
 
-        //- Constant radiative flux [kg/s3]
+        //- Constant radiative flux [kg/s^3]
         volScalarField qrConst_;
 
         //- Radiation mask
@@ -74,15 +74,6 @@ class constantRadiation
 
         //- Duration [s]
         const scalar duration_;
-
-
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construction
-        constantRadiation(const constantRadiation&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const constantRadiation&) = delete;
 
 
 public:
@@ -100,6 +91,9 @@ public:
             const dictionary& dict
         );
 
+        //- Disallow default bitwise copy construction
+        constantRadiation(const constantRadiation&) = delete;
+
 
     //- Destructor
     virtual ~constantRadiation();
@@ -115,6 +109,12 @@ public:
             //- Return the radiation sensible enthalpy source
             //  Also updates qrNet
             virtual tmp<volScalarField> Shs();
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const constantRadiation&) = delete;
 };
 
 

@@ -57,15 +57,6 @@ class noPyrolysis
 :
     public pyrolysisModel
 {
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construction
-        noPyrolysis(const noPyrolysis&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const noPyrolysis&) = delete;
-
-
 protected:
 
     // Protected member functions
@@ -114,6 +105,9 @@ public:
             const word& regionType
         );
 
+        //- Disallow default bitwise copy construction
+        noPyrolysis(const noPyrolysis&) = delete;
+
 
     //- Destructor
     virtual ~noPyrolysis();
@@ -123,7 +117,7 @@ public:
 
         // Fields
 
-            //- Return density [kg/m3]
+            //- Return density [kg/m^3]
             virtual const volScalarField& rho() const;
 
             //- Return const temperature [K]
@@ -138,7 +132,7 @@ public:
             //- Return the region thermal conductivity [W/m/k]
             virtual tmp<volScalarField> kappa() const;
 
-            //- Return the total gas mass flux to primary region [kg/m2/s]
+            //- Return the total gas mass flux to primary region [kg/m^2/s]
             virtual const surfaceScalarField& phiGas() const;
 
 
@@ -150,6 +144,11 @@ public:
             //- Evolve the pyrolysis equations
             virtual void evolveRegion();
 
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const noPyrolysis&) = delete;
 };
 
 

@@ -58,17 +58,8 @@ class primaryRadiation
 {
     // Private Data
 
-        //- Incident radiative flux mapped from  the primary region / [kg/s3]
+        //- Incident radiative flux mapped from  the primary region / [kg/s^3]
         volScalarField qinPrimary_;
-
-
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construction
-        primaryRadiation(const primaryRadiation&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const primaryRadiation&) = delete;
 
 
 public:
@@ -86,6 +77,9 @@ public:
             const dictionary& dict
         );
 
+        //- Disallow default bitwise copy construction
+        primaryRadiation(const primaryRadiation&) = delete;
+
 
     //- Destructor
     virtual ~primaryRadiation();
@@ -101,6 +95,12 @@ public:
             //- Return the radiation sensible enthalpy source
             //  Also updates qrNet
             virtual tmp<volScalarField> Shs();
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const primaryRadiation&) = delete;
 };
 
 

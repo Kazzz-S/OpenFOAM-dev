@@ -60,12 +60,6 @@ class thermalBaffle
 {
     // Private Member Functions
 
-        //- Disallow default bitwise copy construction
-        thermalBaffle(const thermalBaffle&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const thermalBaffle&) = delete;
-
         //- Initialize thermalBaffle
         void init();
 
@@ -138,6 +132,9 @@ public:
             const dictionary& dict
         );
 
+        //- Disallow default bitwise copy construction
+        thermalBaffle(const thermalBaffle&) = delete;
+
 
     //- Destructor
     virtual ~thermalBaffle();
@@ -162,7 +159,7 @@ public:
                 //- Return temperature [K]
                 virtual const volScalarField& T() const;
 
-                //- Return density [Kg/m3]
+                //- Return density [Kg/m^3]
                 virtual const volScalarField& rho() const;
 
                 //- Return thermal conductivity [W/m/K]
@@ -198,6 +195,12 @@ public:
 
             //- Provide some feedback
             virtual void info();
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const thermalBaffle&) = delete;
 };
 
 

@@ -58,25 +58,13 @@ class mappedConvectiveHeatTransfer
 {
     // Private Data
 
-        //- Heat transfer coefficient - primary region [W/m2/K]
+        //- Heat transfer coefficient - primary region [W/m^2/K]
         volScalarField htcConvPrimary_;
 
-        //- Heat transfer coefficient - film region [W/m2/K]
+        //- Heat transfer coefficient - film region [W/m^2/K]
         //  Assumes that the primary regtion to film region boundaries are
         //  described as mappedPushed types
         volScalarField htcConvFilm_;
-
-
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construction
-        mappedConvectiveHeatTransfer
-        (
-            const mappedConvectiveHeatTransfer&
-        ) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const mappedConvectiveHeatTransfer&) = delete;
 
 
 public:
@@ -94,6 +82,12 @@ public:
             const dictionary& dict
         );
 
+        //- Disallow default bitwise copy construction
+        mappedConvectiveHeatTransfer
+        (
+            const mappedConvectiveHeatTransfer&
+        ) = delete;
+
 
     //- Destructor
     virtual ~mappedConvectiveHeatTransfer();
@@ -106,8 +100,14 @@ public:
             //- Correct
             virtual void correct();
 
-            //- Return the heat transfer coefficient [W/m2/K]
+            //- Return the heat transfer coefficient [W/m^2/K]
             virtual tmp<volScalarField> h() const;
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const mappedConvectiveHeatTransfer&) = delete;
 };
 
 

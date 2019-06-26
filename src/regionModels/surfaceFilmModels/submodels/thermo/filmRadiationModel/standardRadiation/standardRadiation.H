@@ -57,7 +57,7 @@ class standardRadiation
 {
     // Private Data
 
-        //- Radiative incident flux mapped from  the primary region / [kg/s3]
+        //- Radiative incident flux mapped from  the primary region / [kg/s^3]
         volScalarField qinPrimary_;
 
         //- Remaining radiative flux after removing local contribution
@@ -71,15 +71,6 @@ class standardRadiation
 
             //- Bar(kappa) coefficient
             scalar kappaBar_;
-
-
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construction
-        standardRadiation(const standardRadiation&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const standardRadiation&) = delete;
 
 
 public:
@@ -97,6 +88,9 @@ public:
             const dictionary& dict
         );
 
+        //- Disallow default bitwise copy construction
+        standardRadiation(const standardRadiation&) = delete;
+
 
     //- Destructor
     virtual ~standardRadiation();
@@ -112,6 +106,12 @@ public:
             //- Return the radiation sensible enthalpy source
             //  Also updates qrNet
             virtual tmp<volScalarField> Shs();
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const standardRadiation&) = delete;
 };
 
 

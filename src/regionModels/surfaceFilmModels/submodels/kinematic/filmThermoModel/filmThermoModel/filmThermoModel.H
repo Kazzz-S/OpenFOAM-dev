@@ -56,15 +56,6 @@ class filmThermoModel
 :
     public filmSubModelBase
 {
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construction
-        filmThermoModel(const filmThermoModel&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const filmThermoModel&) = delete;
-
-
 public:
 
     //- Runtime type information
@@ -98,6 +89,9 @@ public:
             const dictionary& dict
         );
 
+        //- Disallow default bitwise copy construction
+        filmThermoModel(const filmThermoModel&) = delete;
+
 
     // Selectors
 
@@ -121,13 +115,13 @@ public:
 
         // Elemental access
 
-            //- Return density [kg/m3]
+            //- Return density [kg/m^3]
             virtual scalar rho(const scalar p, const scalar T) const = 0;
 
             //- Return dynamic viscosity [Pa.s]
             virtual scalar mu(const scalar p, const scalar T) const = 0;
 
-            //- Return surface tension [kg/s2]
+            //- Return surface tension [kg/s^2]
             virtual scalar sigma(const scalar p, const scalar T) const = 0;
 
             //- Return specific heat capacity [J/kg/K]
@@ -154,13 +148,13 @@ public:
 
         // Field access
 
-            //- Return density [kg/m3]
+            //- Return density [kg/m^3]
             virtual tmp<volScalarField> rho() const = 0;
 
             //- Return dynamic viscosity [Pa.s]
             virtual tmp<volScalarField> mu() const = 0;
 
-            //- Return surface tension [kg/s2]
+            //- Return surface tension [kg/s^2]
             virtual tmp<volScalarField> sigma() const = 0;
 
             //- Return specific heat capacity [J/kg/K]
@@ -168,6 +162,12 @@ public:
 
             //- Return thermal conductivity [W/m/K]
             virtual tmp<volScalarField> kappa() const = 0;
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const filmThermoModel&) = delete;
 };
 
 

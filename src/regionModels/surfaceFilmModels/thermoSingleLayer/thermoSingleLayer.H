@@ -69,12 +69,6 @@ class thermoSingleLayer
 {
     // Private Member Functions
 
-        //- Disallow default bitwise copy construction
-        thermoSingleLayer(const thermoSingleLayer&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const thermoSingleLayer&) = delete;
-
         //- Return boundary types for sensible enthalpy field
         wordList hsBoundaryTypes();
 
@@ -167,10 +161,10 @@ protected:
             autoPtr<filmViscosityModel> viscosity_;
 
             //- Heat transfer coefficient between film surface and primary
-            //  region [W/m2/K]
+            //  region [W/m^2/K]
             autoPtr<heatTransferModel> htcs_;
 
-            //- Heat transfer coefficient between wall and film [W/m2/K]
+            //- Heat transfer coefficient between wall and film [W/m^2/K]
             autoPtr<heatTransferModel> htcw_;
 
             //- Phase change
@@ -246,6 +240,9 @@ public:
             const bool readFields = true
         );
 
+        //- Disallow default bitwise copy construction
+        thermoSingleLayer(const thermoSingleLayer&) = delete;
+
 
     //- Destructor
     virtual ~thermoSingleLayer();
@@ -311,8 +308,8 @@ public:
                 const label patchi,            // patchi on primary region
                 const label facei,             // facei of patchi
                 const scalar massSource,       // [kg]
-                const vector& momentumSource,  // [kg.m/s] (tangential momentum)
-                const scalar pressureSource,   // [kg.m/s] (normal momentum)
+                const vector& momentumSource,  // [kg m/s] (tangential momentum)
+                const scalar pressureSource,   // [kg m/s] (normal momentum)
                 const scalar energySource      // [J]
             );
 
@@ -395,6 +392,12 @@ public:
 
             //- Provide some feedback
             virtual void info();
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const thermoSingleLayer&) = delete;
 };
 
 

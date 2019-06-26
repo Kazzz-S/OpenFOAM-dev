@@ -87,14 +87,6 @@ private:
         autoPtr<ReactingCloud<CloudType>> cloudCopyPtr_;
 
 
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construction
-        ReactingCloud(const ReactingCloud&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const ReactingCloud&) = delete;
-
 
 protected:
 
@@ -171,6 +163,9 @@ public:
             const word& name,
             const ReactingCloud<CloudType>& c
         );
+
+        //- Disallow default bitwise copy construction
+        ReactingCloud(const ReactingCloud&) = delete;
 
         //- Construct and return clone based on (this) with new name
         virtual autoPtr<Cloud<parcelType>> clone(const word& name)
@@ -256,7 +251,7 @@ public:
                     //  - fully explicit
                     inline tmp<volScalarField::Internal> Srho() const;
 
-                    //- Return total mass source term [kg/m3/s]
+                    //- Return total mass source term [kg/m^3/s]
                     inline tmp<fvScalarMatrix> Srho(volScalarField& rho) const;
 
 
@@ -310,6 +305,12 @@ public:
 
             //- Write the field data for the cloud
             virtual void writeFields() const;
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const ReactingCloud&) = delete;
 };
 
 

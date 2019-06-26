@@ -70,12 +70,6 @@ class pyrolysisModel
         //- Read pyrolysis controls
         void readPyrolysisControls();
 
-        //- Disallow default bitwise copy construction
-        pyrolysisModel(const pyrolysisModel&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const pyrolysisModel&) = delete;
-
 
 protected:
 
@@ -150,6 +144,9 @@ public:
             const word& regionType
         );
 
+        //- Disallow default bitwise copy construction
+        pyrolysisModel(const pyrolysisModel&) = delete;
+
         //- Return clone
         autoPtr<pyrolysisModel> clone() const
         {
@@ -186,7 +183,7 @@ public:
 
             // Fields
 
-                //- Return density [kg/m3]
+                //- Return density [kg/m^3]
                 virtual const volScalarField& rho() const = 0;
 
                 //- Return const temperature [K]
@@ -201,7 +198,7 @@ public:
                 //- Return the region thermal conductivity [W/m/k]
                 virtual tmp<volScalarField> kappa() const = 0;
 
-                //- Return the total gas mass flux to primary region [kg/m2/s]
+                //- Return the total gas mass flux to primary region [kg/m^2/s]
                 virtual const surfaceScalarField& phiGas() const = 0;
 
 
@@ -222,6 +219,12 @@ public:
 
             //- Return max diffusivity allowed in the solid
             virtual scalar maxDiff() const;
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const pyrolysisModel&) = delete;
 };
 
 

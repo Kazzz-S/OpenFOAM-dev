@@ -86,13 +86,13 @@ private:
         //- Specie name
         word name_;
 
-        //- Density [kg/m3]
+        //- Density [kg/m^3]
         mutable thermoData rho0_;
 
         //- Dynamic viscosity [Pa.s]
         mutable thermoData mu0_;
 
-        //- Surface tension [kg/s2]
+        //- Surface tension [kg/s^2]
         mutable thermoData sigma0_;
 
         //- Specific heat capacity [J/kg/K]
@@ -122,12 +122,6 @@ private:
         //- Initialise thermoData object
         void init(thermoData& td);
 
-        //- Disallow default bitwise copy construction
-        constantFilmThermo(const constantFilmThermo&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const constantFilmThermo&) = delete;
-
 
 public:
 
@@ -144,6 +138,9 @@ public:
             const dictionary& dict
         );
 
+        //- Disallow default bitwise copy construction
+        constantFilmThermo(const constantFilmThermo&) = delete;
+
 
     //- Destructor
     virtual ~constantFilmThermo();
@@ -157,13 +154,13 @@ public:
 
         // Elemental access
 
-            //- Return density [kg/m3]
+            //- Return density [kg/m^3]
             virtual scalar rho(const scalar p, const scalar T) const;
 
             //- Return dynamic viscosity [Pa.s]
             virtual scalar mu(const scalar p, const scalar T) const;
 
-            //- Return surface tension [kg/s2]
+            //- Return surface tension [kg/s^2]
             virtual scalar sigma(const scalar p, const scalar T) const;
 
             //- Return specific heat capacity [J/kg/K]
@@ -190,13 +187,13 @@ public:
 
         // Field access
 
-            //- Return density [kg/m3]
+            //- Return density [kg/m^3]
             virtual tmp<volScalarField> rho() const;
 
             //- Return dynamic viscosity [Pa.s]
             virtual tmp<volScalarField> mu() const;
 
-            //- Return surface tension [kg/s2]
+            //- Return surface tension [kg/s^2]
             virtual tmp<volScalarField> sigma() const;
 
             //- Return specific heat capacity [J/kg/K]
@@ -204,6 +201,12 @@ public:
 
             //- Return thermal conductivity [W/m/K]
             virtual tmp<volScalarField> kappa() const;
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const constantFilmThermo&) = delete;
 };
 
 

@@ -85,15 +85,6 @@ private:
         autoPtr<ThermoCloud<CloudType>> cloudCopyPtr_;
 
 
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construction
-        ThermoCloud(const ThermoCloud&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const ThermoCloud&) = delete;
-
-
 protected:
 
     // Protected data
@@ -191,6 +182,9 @@ public:
             const ThermoCloud<CloudType>& c
         );
 
+        //- Disallow default bitwise copy construction
+        ThermoCloud(const ThermoCloud&) = delete;
+
         //- Construct and return clone based on (this) with new name
         virtual autoPtr<Cloud<parcelType>> clone(const word& name)
         {
@@ -256,10 +250,10 @@ public:
                  //- Radiation flag
                 inline bool radiation() const;
 
-                //- Radiation sum of parcel projected areas [m2]
+                //- Radiation sum of parcel projected areas [m^2]
                 inline volScalarField::Internal& radAreaP();
 
-                //- Radiation sum of parcel projected areas [m2]
+                //- Radiation sum of parcel projected areas [m^2]
                 inline const volScalarField::Internal&
                     radAreaP() const;
 
@@ -295,7 +289,7 @@ public:
                     inline const volScalarField::Internal&
                         hsCoeff() const;
 
-                    //- Return sensible enthalpy source term [J/kg/m3/s]
+                    //- Return sensible enthalpy source term [J/kg/m^3/s]
                     inline tmp<fvScalarMatrix> Sh(volScalarField& hs) const;
 
 
@@ -370,6 +364,12 @@ public:
 
             //- Print cloud information
             void info();
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const ThermoCloud&) = delete;
 };
 
 

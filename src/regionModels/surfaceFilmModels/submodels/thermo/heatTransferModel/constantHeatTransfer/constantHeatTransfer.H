@@ -57,17 +57,8 @@ class constantHeatTransfer
 {
     // Private Data
 
-        //- Constant heat transfer coefficient [W/m2/K]
+        //- Constant heat transfer coefficient [W/m^2/K]
         scalar c0_;
-
-
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construction
-        constantHeatTransfer(const constantHeatTransfer&) = delete;
-
-        //- Disallow default bitwise assignment
-        void operator=(const constantHeatTransfer&) = delete;
 
 
 public:
@@ -85,6 +76,9 @@ public:
             const dictionary& dict
         );
 
+        //- Disallow default bitwise copy construction
+        constantHeatTransfer(const constantHeatTransfer&) = delete;
+
 
     //- Destructor
     virtual ~constantHeatTransfer();
@@ -97,8 +91,14 @@ public:
             //- Correct
             virtual void correct();
 
-            //- Return the heat transfer coefficient [W/m2/K]
+            //- Return the heat transfer coefficient [W/m^2/K]
             virtual tmp<volScalarField> h() const;
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const constantHeatTransfer&) = delete;
 };
 
 

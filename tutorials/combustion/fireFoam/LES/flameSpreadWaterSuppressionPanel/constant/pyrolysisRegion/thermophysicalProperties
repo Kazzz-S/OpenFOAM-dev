@@ -17,20 +17,13 @@ FoamFile
 thermoType
 {
     type            heSolidThermo;
-    mixture         reactingMixture;
+    mixture         multiComponentMixture;
     transport       constIso;
     thermo          hConst;
     equationOfState rhoConst;
     specie          specie;
     energy          sensibleEnthalpy;
 }
-
-
-chemistryReader foamChemistryReader;
-
-foamChemistryFile "$FOAM_CASE/constant/pyrolysisRegion/reactions";
-
-foamChemistryThermoFile "$FOAM_CASE/constant/pyrolysisRegion/thermo.solid";
 
 gasThermoType
 {
@@ -40,7 +33,6 @@ gasThermoType
     specie          specie;
     energy          sensibleEnthalpy;
 }
-
 
 gas
 {
@@ -63,5 +55,6 @@ gas
     }
 }
 
+#include "thermo.solid"
 
 // ************************************************************************* //

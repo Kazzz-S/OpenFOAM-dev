@@ -27,8 +27,26 @@ Application
 Description
     Interrogates and manipulates dictionaries.
 
+    Supports parallel operation for decomposed dictionary files associated with
+    a case.  These may be mesh or field files or any other decomposed
+    dictionaries.
+
 Usage
     \b foamDictionary [OPTION] dictionary
+      - \par -case \<dir\>
+        Select a case directory
+
+      - \par -parallel
+        Specify case as a parallel job
+
+      - \par -doc
+        Display the documentation in browser
+
+      - \par -srcDoc
+        Display the source documentation in browser
+
+      - \par -help
+        Print the usage
 
       - \par -entry \<name\>
         Selects an entry
@@ -88,6 +106,13 @@ Usage
              -set "uniform (2 0 0)"
         \endverbatim
 
+      - Change bc parameter in parallel:
+        \verbatim
+           mpirun -np 4 foamDictionary 0.5/U \
+             -entry boundaryField.movingWall.value \
+             -set "uniform (2 0 0)" -parallel
+        \endverbatim
+
       - Change whole bc type:
         \verbatim
           foamDictionary 0/U -entry boundaryField.movingWall \
@@ -118,7 +143,8 @@ Usage
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "IOobject.H"
+#include "Time.H"
+#include "localIOdictionary.H"
 #include "Pair.H"
 #include "IFstream.H"
 #include "OFstream.H"
@@ -290,12 +316,12 @@ void remove(dictionary& dict, const dictionary& removeDict)
 
 int main(int argc, char *argv[])
 {
-    #include "removeCaseOptions.H"
-
     writeInfoHeader = false;
 
     argList::addNote("manipulates dictionaries");
+
     argList::validArgs.append("dictionary file");
+
     argList::addBoolOption("keywords", "list keywords");
     argList::addOption("entry", "name", "report/select the named entry");
     argList::addBoolOption
@@ -360,7 +386,7 @@ int main(int argc, char *argv[])
 
     if (listIncludes)
     {
-        Foam::functionEntries::includeEntry::log = true;
+        functionEntries::includeEntry::log = true;
     }
 
     if (args.optionFound("disableFunctionEntries"))
@@ -368,10 +394,72 @@ int main(int argc, char *argv[])
         entry::disableFunctionEntries = true;
     }
 
+    const fileName dictPath(args[1]);
 
-    const fileName dictFileName(args[1]);
-    dictionary dict;
-    IOstream::streamFormat dictFormat = readDict(dict, dictFileName);
+    Time* runTimePtr = nullptr;
+    localIOdictionary* localDictPtr = nullptr;
+
+    dictionary* dictPtr = nullptr;
+    IOstream::streamFormat dictFormat = IOstream::ASCII;
+
+    // When running in parallel read the dictionary as a case localIOdictionary
+    // supporting file handlers
+    if (Pstream::parRun())
+    {
+        if (!args.checkRootCase())
+        {
+            FatalError.exit();
+        }
+
+        runTimePtr = new Time(Time::controlDictName, args);
+
+        const wordList dictPathComponents(dictPath.components());
+
+        if (dictPathComponents.size() == 1)
+        {
+            FatalErrorInFunction
+                << "File name " << dictPath
+                << " does not contain an instance path needed in parallel"
+                << exit(FatalError, 1);
+        }
+
+        const word instance = dictPathComponents[0];
+        const fileName dictFileName
+        (
+            SubList<word>(dictPathComponents, dictPathComponents.size() - 1, 1)
+        );
+
+        scalar time;
+        if (readScalar(instance.c_str(), time))
+        {
+            runTimePtr->setTime(time, 0);
+        }
+
+        const word oldTypeName = localIOdictionary::typeName;
+        const_cast<word&>(localIOdictionary::typeName) = word::null;
+
+        localDictPtr = new localIOdictionary
+        (
+            IOobject
+            (
+                dictFileName,
+                instance,
+                *runTimePtr,
+                IOobject::MUST_READ,
+                IOobject::NO_WRITE,
+                false
+            )
+        );
+
+        const_cast<word&>(localIOdictionary::typeName) = oldTypeName;
+    }
+    else
+    {
+        dictPtr = new dictionary;
+        dictFormat = readDict(*dictPtr, dictPath);
+    }
+
+    dictionary& dict = localDictPtr ? *localDictPtr : *dictPtr;
 
     bool changed = false;
 
@@ -382,8 +470,8 @@ int main(int argc, char *argv[])
     else if (args.optionFound("expand"))
     {
         IOobject::writeBanner(Info)
-            <<"//\n// " << dictFileName << "\n//\n";
-        dict.write(Info, false);
+            <<"//\n// " << dictPath << "\n//\n";
+        dict.dictionary::write(Info, false);
         IOobject::writeDivider(Info);
 
         return 0;
@@ -581,20 +669,31 @@ int main(int argc, char *argv[])
     else if (args.optionFound("diff"))
     {
         remove(dict, diffDict);
-        dict.write(Info, false);
+        dict.dictionary::write(Info, false);
     }
     else
     {
-        dict.write(Info, false);
+        dict.dictionary::write(Info, false);
     }
 
     if (changed)
     {
-        OFstream os(dictFileName, dictFormat);
-        IOobject::writeBanner(os);
-        dict.write(os, false);
-        IOobject::writeEndDivider(os);
+        if (localDictPtr)
+        {
+            localDictPtr->regIOobject::write();
+        }
+        else if (dictPtr)
+        {
+            OFstream os(dictPath, dictFormat);
+            IOobject::writeBanner(os);
+            dictPtr->write(os, false);
+            IOobject::writeEndDivider(os);
+        }
     }
+
+    delete dictPtr;
+    delete localDictPtr;
+    delete runTimePtr;
 
     return 0;
 }

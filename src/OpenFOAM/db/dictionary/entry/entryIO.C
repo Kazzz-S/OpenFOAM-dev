@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -51,22 +51,9 @@ bool Foam::entry::getKeyword(keyType& keyword, token& keywordToken, Istream& is)
     }
     while (keywordToken == token::END_STATEMENT);
 
-    // If the token is a valid keyword set 'keyword' return true...
-    if (keywordToken.isWord())
-    {
-        keyword = keywordToken.wordToken();
-        return true;
-    }
-    else if (keywordToken.isString())
-    {
-        // Enable wildcards
-        keyword = keywordToken.stringToken();
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    keyword = keywordToken;
+
+    return !keyword.isUndefined();
 }
 
 
@@ -153,7 +140,6 @@ bool Foam::entry::New(dictionary& parentDict, Istream& is)
     {
         if (keyword[0] == '#')      // ... Function entry
         {
-            word functionName = keyword(1, keyword.size()-1);
             if (disableFunctionEntries)
             {
                 return parentDict.add
@@ -169,13 +155,14 @@ bool Foam::entry::New(dictionary& parentDict, Istream& is)
             }
             else
             {
+                const word functionName = keyword(1, keyword.size() - 1);
                 return functionEntry::execute(functionName, parentDict, is);
             }
         }
         else if
         (
            !disableFunctionEntries
-         && keyword[0] == '$'
+         && keyword.isVariable()
         )                           // ... Substitution entry
         {
             token nextToken(is);
@@ -231,14 +218,6 @@ bool Foam::entry::New(dictionary& parentDict, Istream& is)
             }
 
             return true;
-        }
-        else if
-        (
-           !disableFunctionEntries
-         && keyword == "include"
-        )                           // ... For backward compatibility
-        {
-            return functionEntries::includeEntry::execute(parentDict, is);
         }
         else                        // ... Data entries
         {

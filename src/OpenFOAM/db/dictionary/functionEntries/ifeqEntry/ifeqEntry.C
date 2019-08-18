@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018-2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -73,43 +73,32 @@ void Foam::functionEntries::ifeqEntry::readToken(token& t, Istream& is)
 Foam::token Foam::functionEntries::ifeqEntry::expand
 (
     const dictionary& dict,
-    const string& keyword,
+    const variable& var,
     const token& t
 )
 {
-    if (keyword[0] == '$')
-    {
-        word varName = keyword(1, keyword.size()-1);
+    word varName = var(1, var.size() - 1);
 
-        // lookup the variable name in the given dictionary
-        const entry* ePtr = dict.lookupScopedEntryPtr
-        (
-            varName,
-            true,
-            true
-        );
-        if (ePtr)
-        {
-            return token(ePtr->stream());
-        }
-        else
-        {
-            // String expansion. Allow unset variables
-            string expanded(keyword);
-            stringOps::inplaceExpand(expanded, dict, true, true);
+    // lookup the variable name in the given dictionary
+    const entry* ePtr = dict.lookupScopedEntryPtr
+    (
+        varName,
+        true,
+        true
+    );
 
-            // Re-form as a string token so we can compare to string
-            return token(expanded, t.lineNumber());
-        }
-    }
-    else if (!t.isString())
+    if (ePtr)
     {
-        // Re-form as a string token so we can compare to string
-        return token(keyword, t.lineNumber());
+        return token(ePtr->stream());
     }
     else
     {
-        return t;
+        // String expansion. Allow unset variables
+        string expanded(var);
+        stringOps::inplaceExpand(expanded, dict, true, true);
+
+        // Re-form as a string token so we can compare to string
+        return token(expanded, t.lineNumber());
     }
 }
 
@@ -120,17 +109,9 @@ Foam::token Foam::functionEntries::ifeqEntry::expand
     const token& t
 )
 {
-    if (t.isWord())
+    if (t.isVariable())
     {
-        return expand(dict, t.wordToken(), t);
-    }
-    else if (t.isVariable())
-    {
-        return expand(dict, t.stringToken(), t);
-    }
-    else if (t.isString())
-    {
-        return expand(dict, t.stringToken(), t);
+        return expand(dict, t.variableToken(), t);
     }
     else
     {
@@ -156,34 +137,23 @@ bool Foam::functionEntries::ifeqEntry::equalToken
             return (eqType && t1.pToken() == t2.pToken());
 
         case token::WORD:
-            if (eqType)
+        case token::STRING:
+        case token::VERBATIMSTRING:
+            if (t2.isAnyString())
             {
-                return t1.wordToken() == t2.wordToken();
-            }
-            else if (t2.isString())
-            {
-                return t1.wordToken() == t2.stringToken();
+                return t1.anyStringToken() == t2.anyStringToken();
             }
             else
             {
                 return false;
             }
 
-        case token::STRING:
         case token::VARIABLE:
-        case token::VERBATIMSTRING:
-            if (eqType)
-            {
-                return t1.stringToken() == t2.stringToken();
-            }
-            else if (t2.isWord())
-            {
-                return t1.stringToken() == t2.wordToken();
-            }
-            else
-            {
-                return false;
-            }
+            FatalErrorInFunction
+                << "Attempt to compare an un-expanded variable"
+                << InfoProxy<token>(t1)
+                << exit(FatalIOError);
+            return false;
 
         case token::LABEL:
             if (eqType)
@@ -251,6 +221,7 @@ bool Foam::functionEntries::ifeqEntry::equalToken
         case token::ERROR:
             return eqType;
     }
+
     return false;
 }
 
@@ -426,11 +397,11 @@ bool Foam::functionEntries::ifeqEntry::execute
 
     stack.append(filePos(is.name(), is.lineNumber()));
 
-    // Read first token and expand any string
+    // Read first token and expand if a variable
     token cond1(is);
     cond1 = expand(parentDict, cond1);
 
-    // Read second token and expand any string
+    // Read second token and expand if a variable
     token cond2(is);
     cond2 = expand(parentDict, cond2);
 

@@ -24,9 +24,9 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "dictionary.H"
+#include "IOobject.H"
 #include "inputSyntaxEntry.H"
 #include "inputModeEntry.H"
-#include "regExp.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -37,7 +37,12 @@ Foam::dictionary::dictionary
     Istream& is
 )
 :
-    dictionaryName(parentDict.name() + '/' + name),
+    dictionaryName
+    (
+        parentDict.name() != fileName::null
+      ? parentDict.name()/name
+      : name
+    ),
     parent_(parentDict)
 {
     read(is);
@@ -113,7 +118,7 @@ bool Foam::dictionary::read(Istream& is, const bool keepHeader)
     // normally remove the FoamFile header entry if it exists
     if (!keepHeader)
     {
-        remove("FoamFile");
+        remove(IOobject::foamFile);
     }
 
     if (is.bad())

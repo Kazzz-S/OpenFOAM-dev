@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -49,12 +49,12 @@ namespace Foam
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-Foam::token Foam::functionEntry::readLine(const word& key, Istream& is)
+Foam::string Foam::functionEntry::readLine(const word& key, Istream& is)
 {
     string s;
     dynamic_cast<ISstream&>(is).getLine(s);
 
-    return token(string(key+s), is.lineNumber());
+    return key + s;
 }
 
 
@@ -69,8 +69,8 @@ Foam::functionEntry::functionEntry
 :
     primitiveEntry
     (
-        word(key+dict.name()+Foam::name(is.lineNumber())),
-        readLine(key, is)
+        word(key + dict.name() + Foam::name(is.lineNumber())),
+        token(word(readLine(key, is)), is.lineNumber())
     )
 {}
 
@@ -164,16 +164,19 @@ bool Foam::functionEntry::execute
 
 void Foam::functionEntry::write(Ostream& os) const
 {
-    // Contents should be single string token
-    const token& t = operator[](0);
-    const string& s = t.stringToken();
+    os.indent();
 
-    for (size_t i = 0; i < s.size(); i++)
+    for (label i=0; i<size(); ++i)
     {
-        os.write(s[i]);
+        os << operator[](i);
+
+        if (i < size()-1)
+        {
+            os  << token::SPACE;
+        }
     }
 
-    os << endl;
+    os  << endl;
 }
 
 

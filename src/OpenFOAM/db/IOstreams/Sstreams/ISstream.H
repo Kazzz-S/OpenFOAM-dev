@@ -63,16 +63,17 @@ class ISstream
 
         char nextValid();
 
+        //- Read a verbatim string (excluding block delimiters).
+        Istream& readVerbatim(verbatimString&);
+
+        //- Read a variable name
+        Istream& readVariable(string&);
+
+        //- Read a work token
         void readWordToken(token&);
 
-    // Private Member Functions
-
-
-        //- Read a verbatim string (excluding block delimiters).
-        Istream& readVerbatim(string&);
-
-        //- Read a variable name (includes '{')
-        Istream& readVariable(string&);
+        //- Read a variable token
+        void readVariableToken(token&);
 
 
 public:
@@ -130,6 +131,10 @@ public:
 
             //- Raw, low-level getline into a string function.
             inline ISstream& getLine(string&);
+
+            //- Get multiple lines using the '\' continuation character
+            //   into a string
+            inline ISstream& getMultiLines(string&);
 
             //- Raw, low-level putback character function.
             inline ISstream& putback(const char&);

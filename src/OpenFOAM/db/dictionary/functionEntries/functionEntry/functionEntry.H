@@ -68,7 +68,7 @@ class functionEntry
     // Private Member Functions
 
         //- Read line as string token
-        static token readLine(const word& key, Istream& is);
+        static string readLine(const word& key, Istream& is);
 
 
 public:
@@ -78,8 +78,10 @@ public:
         //- Construct from keyword, parent dictionary and Istream
         functionEntry(const word&, const dictionary&, Istream&);
 
-        //- Disallow default bitwise copy construction
-        functionEntry(const functionEntry&) = delete;
+        autoPtr<entry> clone(const dictionary&) const
+        {
+            return autoPtr<entry>(new functionEntry(*this));
+        }
 
 
     // Member Function Selectors

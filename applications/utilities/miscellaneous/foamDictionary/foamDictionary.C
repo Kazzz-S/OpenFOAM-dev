@@ -161,30 +161,37 @@ IOstream::streamFormat readDict(dictionary& dict, const fileName& dictFileName)
 {
     IOstream::streamFormat dictFormat = IOstream::ASCII;
 
+    // Read the first entry and if it is FoamFile set the file format
+    {
+        IFstream dictFile(dictFileName);
+        if (!dictFile().good())
+        {
+            FatalErrorInFunction
+                << "Cannot open file " << dictFileName
+                << exit(FatalError, 1);
+        }
+
+        // Read the first entry from the dictionary without expansion
+        entry::disableFunctionEntries = true;
+        autoPtr<entry> firstEntry(entry::New(dictFile()));
+        entry::disableFunctionEntries = false;
+
+        // If the first entry is the "FoamFile" header dictionary
+        // read and set the stream format
+        if (firstEntry->isDict() && firstEntry->keyword() == IOobject::foamFile)
+        {
+            dictFormat = IOstream::formatEnum
+            (
+                firstEntry->dict().lookup("format")
+            );
+            dictFile().format(dictFormat);
+        }
+    }
+
     IFstream dictFile(dictFileName);
-    if (!dictFile().good())
-    {
-        FatalErrorInFunction
-            << "Cannot open file " << dictFileName
-            << exit(FatalError, 1);
-    }
-
-    // Read the first entry from the dictionary
-    autoPtr<entry> firstEntry(entry::New(dictFile()));
-
-    // If the first entry is the "FoamFile" header dictionary
-    // read and set the stream format
-    if (firstEntry->isDict() && firstEntry->keyword() == "FoamFile")
-    {
-        dictFormat = IOstream::formatEnum(firstEntry->dict().lookup("format"));
-        dictFile().format(dictFormat);
-    }
-
-    // Add the first entry to the dictionary
-    dict.add(firstEntry);
 
     // Read and add the rest of the dictionary entries
-    // preserving the "FoamFile" header dictionary if present
+    // preserving the IOobject::foamFile header dictionary if present
     dict.read(dictFile(), true);
 
     return dictFormat;
@@ -435,9 +442,6 @@ int main(int argc, char *argv[])
             runTimePtr->setTime(time, 0);
         }
 
-        const word oldTypeName = localIOdictionary::typeName;
-        const_cast<word&>(localIOdictionary::typeName) = word::null;
-
         localDictPtr = new localIOdictionary
         (
             IOobject
@@ -450,12 +454,10 @@ int main(int argc, char *argv[])
                 false
             )
         );
-
-        const_cast<word&>(localIOdictionary::typeName) = oldTypeName;
     }
     else
     {
-        dictPtr = new dictionary;
+        dictPtr = new dictionary(dictPath);
         dictFormat = readDict(*dictPtr, dictPath);
     }
 
@@ -686,6 +688,13 @@ int main(int argc, char *argv[])
         {
             OFstream os(dictPath, dictFormat);
             IOobject::writeBanner(os);
+            if (dictPtr->found(IOobject::foamFile))
+            {
+                os << IOobject::foamFile;
+                dictPtr->subDict(IOobject::foamFile).write(os);
+                dictPtr->remove(IOobject::foamFile);
+                IOobject::writeDivider(os) << nl;
+            }
             dictPtr->write(os, false);
             IOobject::writeEndDivider(os);
         }

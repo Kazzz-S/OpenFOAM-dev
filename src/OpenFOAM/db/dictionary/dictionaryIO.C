@@ -39,27 +39,12 @@ Foam::dictionary::dictionary
 :
     dictionaryName
     (
-        parentDict.name() != fileName::null
+        parentDict.name().size()
       ? parentDict.name()/name
       : name
     ),
     parent_(parentDict)
 {
-    read(is);
-}
-
-
-Foam::dictionary::dictionary(Istream& is)
-:
-    dictionaryName(is.name()),
-    parent_(dictionary::null)
-{
-    // Reset input syntax as this is a "top-level" dictionary
-    functionEntries::inputSyntaxEntry::clear();
-
-    // Reset input mode as this is a "top-level" dictionary
-    functionEntries::inputModeEntry::clear();
-
     read(is);
 }
 
@@ -131,12 +116,6 @@ bool Foam::dictionary::read(Istream& is, const bool keepHeader)
     }
 
     return true;
-}
-
-
-bool Foam::dictionary::read(Istream& is)
-{
-    return this->read(is, false);
 }
 
 

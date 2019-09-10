@@ -349,12 +349,26 @@ bool Foam::functionObjectList::readFunctionObject
     // fields to requiredFields
     if (args.size() == 1)
     {
-        funcDict.set("field", args[0]);
-        funcDict.set("fields", args);
+        if (funcDict.found("objects"))
+        {
+            funcDict.set("objects", args);
+        }
+        else
+        {
+            funcDict.set("field", args[0]);
+            funcDict.set("fields", args);
+        }
     }
     else if (args.size() > 1)
     {
-        funcDict.set("fields", args);
+        if (funcDict.found("objects"))
+        {
+            funcDict.set("objects", args);
+        }
+        else
+        {
+            funcDict.set("fields", args);
+        }
     }
 
     // Insert named arguments
@@ -373,7 +387,6 @@ bool Foam::functionObjectList::readFunctionObject
         funcDict.set("region", region);
     }
 
-    // Merge this functionObject dictionary into functionsDict
     const word funcCallKeyword = string::validate<word>(funcCall);
     dictionary funcArgsDict;
     funcArgsDict.add(funcCallKeyword, funcDict);
@@ -400,6 +413,7 @@ bool Foam::functionObjectList::readFunctionObject
         requiredFields.insert(wordList(expandedFuncDict.lookup("fields")));
     }
 
+    // Merge this functionObject dictionary into functionsDict
     functionsDict.merge(funcArgsDict);
     functionsDict.subDict(funcCallKeyword).name() = funcDict.name();
 

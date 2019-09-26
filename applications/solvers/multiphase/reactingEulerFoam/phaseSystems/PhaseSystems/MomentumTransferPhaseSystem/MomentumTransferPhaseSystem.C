@@ -116,44 +116,52 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::Vm
 }
 
 
-template<class BasePhaseSystem>
-void Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::
-addMassTransferMomentumTransfer(phaseSystem::momentumTransferTable& eqns) const
-{
-    forAllConstIter
-    (
-        phaseSystem::phasePairTable,
-        this->phasePairs_,
-        phasePairIter
-    )
-    {
-        const phasePair& pair(phasePairIter());
+// * * * * * * * * * * * * Protected Member Functions * * * * * * * * * * * //
 
-        if (pair.ordered())
-        {
-            continue;
-        }
+template<class BasePhaseSystem>
+void Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::addDmdtU
+(
+    const phaseSystem::dmdtTable& dmdts,
+    phaseSystem::momentumTransferTable& eqns
+)
+{
+    forAllConstIter(phaseSystem::dmdtTable, dmdts, dmdtIter)
+    {
+        const phasePairKey& key = dmdtIter.key();
+        const phasePair& pair(this->phasePairs_[key]);
+
+        const volScalarField dmdt(Pair<word>::compare(pair, key)**dmdtIter());
+
+        phaseModel& phase1 = this->phases()[pair.phase1().name()];
+        phaseModel& phase2 = this->phases()[pair.phase2().name()];
 
         // Note that the phase UEqn contains a continuity error term, which
         // implicitly adds a mass transfer term of fvm::Sp(dmdt, U). These
-        // additions do not include this term.
+        // additions remove the part of this term corresponding to the supplied
+        // mass transfer rate; I.e.:
+        //
+        // DDt(alpha1*rho1*U1) + ... = dmdt21*U2 + dmdt12*U1
+        // DDt(alpha1*rho1*U1) - contErr + ... = dmdt21*U2 + dmdt12*U1 - contErr
+        // DDt(alpha1*rho1*U1) - contErr + ... = dmdt21*U2 + dmdt12*U1 - dmdt*U1
+        // DDt(alpha1*rho1*U1) - contErr + ... = dmdt21*U2 - dmdt21*U1
+        //
+        // Where contErr is the continuity error associated with this mass
+        // transfer rate, dmdt.
 
-        const volScalarField dmdt(this->dmdt(pair));
-
-        if (!pair.phase1().stationary())
+        if (!phase1.stationary())
         {
-            fvVectorMatrix& eqn = *eqns[pair.phase1().name()];
             const volScalarField dmdt21(posPart(dmdt));
 
-            eqn += dmdt21*pair.phase2().U() - fvm::Sp(dmdt21, eqn.psi());
+            *eqns[phase1.name()] +=
+                dmdt21*phase2.U() - fvm::Sp(dmdt21, phase1.URef());
         }
 
-        if (!pair.phase2().stationary())
+        if (!phase2.stationary())
         {
-            fvVectorMatrix& eqn = *eqns[pair.phase2().name()];
             const volScalarField dmdt12(negPart(dmdt));
 
-            eqn -= dmdt12*pair.phase1().U() - fvm::Sp(dmdt12, eqn.psi());
+            *eqns[phase2.name()] -=
+                dmdt12*phase1.U() - fvm::Sp(dmdt12, phase2.URef());
         }
     }
 }
@@ -367,9 +375,6 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::momentumTransfer()
         }
     }
 
-    // Add the source term due to mass transfer
-    addMassTransferMomentumTransfer(eqns);
-
     return eqnsPtr;
 }
 
@@ -443,9 +448,6 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::momentumTransferf()
         }
     }
 
-    // Add the source term due to mass transfer
-    addMassTransferMomentumTransfer(eqns);
-
     return eqnsPtr;
 }
 
@@ -464,7 +466,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::AFfs() const
 
         forAllConstIter(phasePair, pair, iter)
         {
-            this->addField(iter(), "AFf", Kf, AFfs);
+            addField(iter(), "AFf", Kf, AFfs);
         }
     }
 
@@ -476,7 +478,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::AFfs() const
 
         forAllConstIter(phasePair, pair, iter)
         {
-            this->addField(iter(), "AFf", byDt(Vmf), AFfs);
+            addField(iter(), "AFf", byDt(Vmf), AFfs);
         }
     }
 
@@ -509,14 +511,14 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFs
         const volVectorField F(liftModelIter()->F<vector>());
         const phasePair& pair(this->phasePairs_[liftModelIter.key()]);
 
-        this->addField
+        addField
         (
             pair.phase1(),
             "phiF",
             fvc::flux(rAUs[pair.phase1().index()]*F),
             phiFs
         );
-        this->addField
+        addField
         (
             pair.phase2(),
             "phiF",
@@ -537,14 +539,14 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFs
         const phasePair&
             pair(this->phasePairs_[wallLubricationModelIter.key()]);
 
-        this->addField
+        addField
         (
             pair.phase1(),
             "phiF",
             fvc::flux(rAUs[pair.phase1().index()]*F),
             phiFs
         );
-        this->addField
+        addField
         (
             pair.phase2(),
             "phiF",
@@ -569,7 +571,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFs
             fvc::snGrad(phase)*this->mesh_.magSf()
         );
 
-        this->addField(phase, "phiF", pPrimeByAf*snGradAlpha1, phiFs);
+        addField(phase, "phiF", pPrimeByAf*snGradAlpha1, phiFs);
 
         const bool implicitPhasePressure =
             this->mesh_.solverDict(phase.volScalarField::name()).
@@ -581,7 +583,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFs
 
         if (implicitPhasePressure)
         {
-            this->addField(phase, "DByAf", pPrimeByAf, DByAfs_);
+            addField(phase, "DByAf", pPrimeByAf, DByAfs_);
         }
     }
 
@@ -611,13 +613,17 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFs
         (
             fvc::snGrad(pair.phase1())*this->mesh_.magSf()
         );
+        const surfaceScalarField snGradAlpha2
+        (
+            fvc::snGrad(pair.phase2())*this->mesh_.magSf()
+        );
 
-        this->addField(pair.phase1(), "phiF", DByA1f*snGradAlpha1, phiFs);
-        this->addField(pair.phase2(), "phiF", -DByA2f*snGradAlpha1, phiFs);
+        addField(pair.phase1(), "phiF", DByA1f*snGradAlpha1, phiFs);
+        addField(pair.phase2(), "phiF", DByA2f*snGradAlpha2, phiFs);
 
         if (DByAfs_.found(pair.phase1().name()))
         {
-            this->addField(pair.phase1(), "DByAf", DByA1f, DByAfs_);
+            addField(pair.phase1(), "DByAf", DByA1f, DByAfs_);
         }
     }
 
@@ -647,7 +653,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFfs
 
         forAllConstIter(phasePair, pair, iter)
         {
-            this->addField
+            addField
             (
                 iter(),
                 "phiFf",
@@ -672,14 +678,14 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFfs
         const surfaceScalarField Ff(liftModelIter()->Ff());
         const phasePair& pair(this->phasePairs_[liftModelIter.key()]);
 
-        this->addField
+        addField
         (
             pair.phase1(),
             "phiFf",
             rAUfs[pair.phase1().index()]*Ff,
             phiFfs
         );
-        this->addField
+        addField
         (
             pair.phase2(),
             "phiFf",
@@ -700,14 +706,14 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFfs
         const phasePair&
             pair(this->phasePairs_[wallLubricationModelIter.key()]);
 
-        this->addField
+        addField
         (
             pair.phase1(),
             "phiFf",
             rAUfs[pair.phase1().index()]*Ff,
             phiFfs
         );
-        this->addField
+        addField
         (
             pair.phase2(),
             "phiFf",
@@ -732,7 +738,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFfs
             fvc::snGrad(phase)*this->mesh_.magSf()
         );
 
-        this->addField(phase, "phiFf", pPrimeByAf*snGradAlpha1, phiFfs);
+        addField(phase, "phiFf", pPrimeByAf*snGradAlpha1, phiFfs);
 
         const bool implicitPhasePressure =
             this->mesh_.solverDict(phase.volScalarField::name()).
@@ -744,7 +750,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFfs
 
         if (implicitPhasePressure)
         {
-            this->addField(phase, "DByAf", pPrimeByAf, DByAfs_);
+            addField(phase, "DByAf", pPrimeByAf, DByAfs_);
         }
     }
 
@@ -762,14 +768,14 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFfs
 
         const volScalarField D(turbulentDispersionModelIter()->D());
 
-        this->addField
+        addField
         (
             pair.phase1(),
             "phiFf",
             rAUfs[pair.phase1().index()]*Ff,
             phiFfs
         );
-        this->addField
+        addField
         (
             pair.phase2(),
             "phiFf",
@@ -779,7 +785,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiFfs
 
         if (DByAfs_.found(pair.phase1().name()))
         {
-            this->addField
+            addField
             (
                 pair.phase1(),
                 "DByAf",
@@ -815,7 +821,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiKdPhis
 
         forAllConstIter(phasePair, pair, iter)
         {
-            this->addField
+            addField
             (
                 iter(),
                 "phiKdPhi",
@@ -857,7 +863,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::phiKdPhifs
 
         forAllConstIter(phasePair, pair, iter)
         {
-            this->addField
+            addField
             (
                 iter(),
                 "phiKdPhif",
@@ -899,7 +905,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::KdUByAs
 
         forAllConstIter(phasePair, pair, iter)
         {
-            this->addField
+            addField
             (
                 iter(),
                 "KdUByA",
@@ -972,7 +978,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::ddtCorrByAs
             }
         }
 
-        this->addField
+        addField
         (
             phase,
             "ddtCorrByA",
@@ -997,7 +1003,7 @@ Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::ddtCorrByAs
                 const phaseModel& phase = iter();
                 const phaseModel& otherPhase = iter.otherPhase();
 
-                this->addField
+                addField
                 (
                     iter(),
                     "ddtCorrByA",
@@ -1055,14 +1061,14 @@ void Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::partialElimination
         const label phase1i = pair.phase1().index();
         const label phase2i = pair.phase2().index();
 
-        this->addField
+        addField
         (
             pair.phase2(),
             "KdByA",
            -rAUs[phase1i]*K,
             KdByAs[phase1i]
         );
-        this->addField
+        addField
         (
             pair.phase1(),
             "KdByA",
@@ -1070,14 +1076,14 @@ void Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::partialElimination
             KdByAs[phase2i]
         );
 
-        this->addField
+        addField
         (
             pair.phase2(),
             "phiKd",
             fvc::interpolate(KdByAs[phase1i][phase2i]),
             phiKds[phase1i]
         );
-        this->addField
+        addField
         (
             pair.phase1(),
             "phiKd",
@@ -1179,14 +1185,14 @@ void Foam::MomentumTransferPhaseSystem<BasePhaseSystem>::partialEliminationf
         const label phase1i = pair.phase1().index();
         const label phase2i = pair.phase2().index();
 
-        this->addField
+        addField
         (
             pair.phase2(),
             "phiKdf",
            -rAUfs[phase1i]*K,
             phiKdfs[phase1i]
         );
-        this->addField
+        addField
         (
             pair.phase1(),
             "phiKdf",

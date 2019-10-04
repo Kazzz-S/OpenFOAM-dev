@@ -9,34 +9,30 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    object      topoSetDict;
+    class       volScalarField;
+    location    "0/wallFilm";
+    object      Tf;
 }
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-actions
-(
+dimensions      [0 0 0 1 0 0 0];
+
+internalField   uniform  300;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    walls_top
     {
-        name    wallFilmFaceSet;
-        type    faceSet;
-        action  new;
-        source  patchToFace;
-        sourceInfo
-        {
-            name filmWalls;
-        }
+        type            zeroGradient;
     }
+
+    region0_to_wallFilm_walls
     {
-        name    wallFilmFaces;
-        type    faceZoneSet;
-        action  new;
-        source  setToFaceZone;
-        sourceInfo
-        {
-            faceSet wallFilmFaceSet;
-        }
+        type            zeroGradient;
     }
-);
+}
+
 
 // ************************************************************************* //

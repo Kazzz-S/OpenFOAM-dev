@@ -10,13 +10,48 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      decomposeParDict;
+    location    "system/wallFilm";
+    object      fvSolution;
 }
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-numberOfSubdomains 4;
+solvers
+{
+    "(Uf|hf|deltaf\*rhof)"
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-10;
+        relTol          0;
+    }
+    deltaf
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-10;
+        relTol          0;
+    }
+}
 
-method          ptscotch;
+
+PISO
+{
+    momentumPredictor yes;
+    nCorr           1;
+    nNonOrthCorr    0;
+}
+
+
+relaxationFactors
+{
+    fields
+    {
+        ".*"            1;
+    }
+    equations
+    {
+        ".*"            1;
+    }
+}
 
 // ************************************************************************* //

@@ -107,6 +107,10 @@ Description
         xScale   | 'x' scaling function of type Function1<scalar> | no
     \endtable
 
+See also
+    Foam::Function1Types::ramp
+    Foam::Function1Types::reverseRamp
+
 SourceFiles
     Scale.C
 

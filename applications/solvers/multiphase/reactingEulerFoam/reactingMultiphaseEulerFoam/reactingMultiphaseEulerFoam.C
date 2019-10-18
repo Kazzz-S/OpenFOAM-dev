@@ -29,7 +29,7 @@ Description
     common pressure, but otherwise separate properties. The type of phase model
     is run time selectable and can optionally represent multiple species and
     in-phase reactions. The phase system is also run time selectable and can
-    optionally represent different types of momentun, heat and mass transfer.
+    optionally represent different types of momentum, heat and mass transfer.
 
 \*---------------------------------------------------------------------------*/
 
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
         // --- Pressure-velocity PIMPLE corrector loop
         while (pimple.loop())
         {
-            fluid.solve();
+            fluid.solve(rAUs, rAUfs);
             fluid.correct();
 
             #include "YEqns.H"

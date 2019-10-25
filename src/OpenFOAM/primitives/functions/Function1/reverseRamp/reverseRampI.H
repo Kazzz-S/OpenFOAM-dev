@@ -27,12 +27,22 @@ License
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-inline Foam::scalar Foam::Function1Types::reverseRamp::value
+inline Foam::scalar Foam::Function1s::reverseRamp::value
 (
     const scalar t
 ) const
 {
     return 1 - ramp_->value(t);
+}
+
+
+inline Foam::scalar Foam::Function1s::reverseRamp::integrate
+(
+    const scalar t1,
+    const scalar t2
+) const
+{
+    return (t2 - t1) - ramp_->integrate(t1, t2);
 }
 
 

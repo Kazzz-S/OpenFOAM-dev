@@ -37,7 +37,7 @@ Usage
         psi          | compressibility field name | no       | none
         gamma        | ratio of specific heats (Cp/Cv) | yes |
         p0           | static pressure reference | yes       |
-        omega        | angular velocty of the frame [rad/s] | yes    |
+        omega        | angular velocity of the frame [rad/s] | yes    |
     \endtable
 
     Example of the boundary condition specification:
@@ -60,7 +60,7 @@ Usage
 
 See also
     Foam::totalPressureFvPatchScalarField
-    Foam::Function1Types
+    Foam::Function1s
 
 SourceFiles
     rotatingTotalPressureFvPatchScalarField.C

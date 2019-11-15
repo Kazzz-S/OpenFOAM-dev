@@ -27,7 +27,9 @@ License
 #include "zeroGradientFvPatchFields.H"
 #include "fixedEnergyFvPatchScalarField.H"
 #include "gradientEnergyFvPatchScalarField.H"
+#include "gradientEnergyCalculatedTemperatureFvPatchScalarField.H"
 #include "mixedEnergyFvPatchScalarField.H"
+#include "mixedEnergyCalculatedTemperatureFvPatchScalarField.H"
 #include "fixedJumpFvPatchFields.H"
 #include "fixedJumpAMIFvPatchFields.H"
 #include "energyJumpFvPatchScalarField.H"
@@ -96,11 +98,22 @@ Foam::wordList Foam::basicThermo::heBoundaryTypes()
         (
             isA<zeroGradientFvPatchScalarField>(tbf[patchi])
          || isA<fixedGradientFvPatchScalarField>(tbf[patchi])
+         || isA<gradientEnergyCalculatedTemperatureFvPatchScalarField>
+            (
+                tbf[patchi]
+            )
         )
         {
             hbt[patchi] = gradientEnergyFvPatchScalarField::typeName;
         }
-        else if (isA<mixedFvPatchScalarField>(tbf[patchi]))
+        else if
+        (
+            isA<mixedFvPatchScalarField>(tbf[patchi])
+         || isA<mixedEnergyCalculatedTemperatureFvPatchScalarField>
+            (
+                tbf[patchi]
+            )
+        )
         {
             hbt[patchi] = mixedEnergyFvPatchScalarField::typeName;
         }
@@ -172,8 +185,6 @@ Foam::basicThermo::basicThermo
 
     phaseName_(phaseName),
 
-    p_(lookupOrConstruct(mesh, "p")),
-
     T_
     (
         IOobject
@@ -226,8 +237,6 @@ Foam::basicThermo::basicThermo
     ),
 
     phaseName_(phaseName),
-
-    p_(lookupOrConstruct(mesh, "p")),
 
     T_
     (
@@ -467,18 +476,6 @@ Foam::wordList Foam::basicThermo::splitThermoName
     }
 
     return cmpts;
-}
-
-
-Foam::volScalarField& Foam::basicThermo::p()
-{
-    return p_;
-}
-
-
-const Foam::volScalarField& Foam::basicThermo::p() const
-{
-    return p_;
 }
 
 

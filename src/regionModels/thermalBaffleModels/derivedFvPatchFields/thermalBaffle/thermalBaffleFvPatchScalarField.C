@@ -277,11 +277,11 @@ void thermalBaffleFvPatchScalarField::write(Ostream& os) const
            << token::END_STATEMENT << nl;
 
         writeKeyword(os, "nLayers");
-        os << readLabel(dict_.lookup("nLayers"))
+        os << dict_.lookup<label>("nLayers")
            << token::END_STATEMENT << nl;
 
         writeKeyword(os, "expansionRatio");
-        os << readScalar(dict_.lookup("expansionRatio"))
+        os << dict_.lookup<scalar>("expansionRatio")
            << token::END_STATEMENT << nl;
 
         writeKeyword(os, "columnCells");

@@ -121,7 +121,7 @@ Foam::rigidBodyMeshMotionSolver::rigidBodyMeshMotionSolver
 {
     if (rhoName_ == "rhoInf")
     {
-        rhoInf_ = readScalar(coeffDict().lookup("rhoInf"));
+        rhoInf_ = coeffDict().lookup<scalar>("rhoInf");
     }
 
     const dictionary& bodiesDict = coeffDict().subDict("bodies");
@@ -201,7 +201,7 @@ void Foam::rigidBodyMeshMotionSolver::solve()
 
     if (test_)
     {
-        label nIter(readLabel(coeffDict().lookup("nIter")));
+        label nIter(coeffDict().lookup<label>("nIter"));
 
         for (label i=0; i<nIter; i++)
         {

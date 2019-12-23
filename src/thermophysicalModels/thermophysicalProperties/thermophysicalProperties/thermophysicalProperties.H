@@ -46,6 +46,10 @@ SourceFiles
 namespace Foam
 {
 
+// Forward declaration of friend functions and operators
+class thermophysicalProperties;
+Ostream& operator<<(Ostream& os, const thermophysicalProperties& l);
+
 /*---------------------------------------------------------------------------*\
                     Class thermophysicalProperties Declaration
 \*---------------------------------------------------------------------------*/
@@ -170,10 +174,7 @@ public:
         void readIfPresent(const dictionary& dict);
 
         //- Write the function coefficients
-        virtual void writeData(Ostream& os) const = 0;
-
-        //- Write dictionary to Ostream
-        void write(Ostream& os) const;
+        virtual void write(Ostream& os) const = 0;
 
         //- Ostream Operator
         friend Ostream& operator<<
@@ -182,9 +183,6 @@ public:
             const thermophysicalProperties& l
         );
 };
-
-
-Ostream& operator<<(Ostream& os, const thermophysicalProperties& l);
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

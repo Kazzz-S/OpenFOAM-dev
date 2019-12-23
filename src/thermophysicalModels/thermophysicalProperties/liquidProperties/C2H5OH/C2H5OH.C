@@ -59,8 +59,8 @@ Foam::C2H5OH::C2H5OH()
     Cp_
     (
         2052.57331394213,
-       -1.21990926653498,
-        0.00714146172046278,
+       -0.121990926653498,
+       -0.00714146172046278,
         5.20523562482363e-05,
         0.0,
         0.0
@@ -69,8 +69,8 @@ Foam::C2H5OH::C2H5OH()
     (
        -6752827.25039109,
         2052.57331394213,
-       -0.60995463326749,
-        0.00238048724015426,
+       -0.060995463326749,
+       -0.00238048724015426,
         1.30130890620591e-05,
         0.0
     ),
@@ -95,19 +95,19 @@ Foam::C2H5OH::C2H5OH()
 Foam::C2H5OH::C2H5OH
 (
     const liquidProperties& l,
-    const NSRDSfunc5& density,
-    const NSRDSfunc1& vapourPressure,
-    const NSRDSfunc6& heatOfVapourisation,
-    const NSRDSfunc0& heatCapacity,
-    const NSRDSfunc0& enthalpy,
-    const NSRDSfunc7& idealGasHeatCapacity,
-    const NSRDSfunc4& secondVirialCoeff,
-    const NSRDSfunc1& dynamicViscosity,
-    const NSRDSfunc2& vapourDynamicViscosity,
-    const NSRDSfunc0& thermalConductivity,
-    const NSRDSfunc2& vapourThermalConductivity,
-    const NSRDSfunc0& surfaceTension,
-    const APIdiffCoefFunc& vapourDiffusivity
+    const thermophysicalFunctions::NSRDS5& density,
+    const thermophysicalFunctions::NSRDS1& vapourPressure,
+    const thermophysicalFunctions::NSRDS6& heatOfVapourisation,
+    const thermophysicalFunctions::NSRDS0& heatCapacity,
+    const thermophysicalFunctions::NSRDS0& enthalpy,
+    const thermophysicalFunctions::NSRDS7& idealGasHeatCapacity,
+    const thermophysicalFunctions::NSRDS4& secondVirialCoeff,
+    const thermophysicalFunctions::NSRDS1& dynamicViscosity,
+    const thermophysicalFunctions::NSRDS2& vapourDynamicViscosity,
+    const thermophysicalFunctions::NSRDS0& thermalConductivity,
+    const thermophysicalFunctions::NSRDS2& vapourThermalConductivity,
+    const thermophysicalFunctions::NSRDS0& surfaceTension,
+    const thermophysicalFunctions::APIdiffCoef& vapourDiffusivity
 )
 :
     liquidProperties(l),
@@ -137,18 +137,9 @@ Foam::C2H5OH::C2H5OH(const dictionary& dict)
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void Foam::C2H5OH::writeData(Ostream& os) const
+void Foam::C2H5OH::write(Ostream& os) const
 {
-    liquidProperties::writeData(*this, os);
-}
-
-
-// * * * * * * * * * * * * * * * Ostream Operator  * * * * * * * * * * * * * //
-
-Foam::Ostream& Foam::operator<<(Ostream& os, const C2H5OH& l)
-{
-    l.writeData(os);
-    return os;
+    liquidProperties::write(*this, os);
 }
 
 

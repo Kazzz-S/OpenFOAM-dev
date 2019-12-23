@@ -48,7 +48,7 @@ bool Foam::setRefCell
         {
             if (Pstream::master())
             {
-                refCelli = readLabel(dict.lookup(refCellName));
+                refCelli = dict.lookup<label>(refCellName);
 
                 if (refCelli < 0 || refCelli >= field.mesh().nCells())
                 {
@@ -108,7 +108,7 @@ bool Foam::setRefCell
                 << " or " << refPointName << nl << exit(FatalIOError);
         }
 
-        refValue = readScalar(dict.lookup(refValueName));
+        refValue = dict.lookup<scalar>(refValueName);
 
         return true;
     }

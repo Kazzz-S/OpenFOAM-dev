@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2015-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2015-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -185,19 +185,19 @@ Foam::phaseSystem::phaseSystem
         phaseModel& phase = phaseModels_[phasei];
         if (!phase.stationary())
         {
-            movingPhaseModels_.set(movingPhasei ++, &phase);
+            movingPhaseModels_.set(movingPhasei++, &phase);
         }
         if (phase.stationary())
         {
-            stationaryPhaseModels_.set(stationaryPhasei ++, &phase);
+            stationaryPhaseModels_.set(stationaryPhasei++, &phase);
         }
         if (!phase.isothermal())
         {
-            anisothermalPhaseModels_.set(anisothermalPhasei ++, &phase);
+            anisothermalPhaseModels_.set(anisothermalPhasei++, &phase);
         }
         if (!phase.pure())
         {
-            multiComponentPhaseModels_.set(multiComponentPhasei ++, &phase);
+            multiComponentPhaseModels_.set(multiComponentPhasei++, &phase);
         }
     }
 
@@ -238,10 +238,14 @@ Foam::phaseSystem::~phaseSystem()
 
 Foam::tmp<Foam::volScalarField> Foam::phaseSystem::rho() const
 {
-    const label nMovingPhases = movingPhaseModels_.size();
-
     tmp<volScalarField> rho(movingPhaseModels_[0]*movingPhaseModels_[0].rho());
-    for (label movingPhasei = 1; movingPhasei < nMovingPhases; ++ movingPhasei)
+
+    for
+    (
+        label movingPhasei=1;
+        movingPhasei<movingPhaseModels_.size();
+        movingPhasei++
+    )
     {
         rho.ref() +=
             movingPhaseModels_[movingPhasei]
@@ -253,22 +257,40 @@ Foam::tmp<Foam::volScalarField> Foam::phaseSystem::rho() const
         return rho;
     }
 
-    volScalarField alpha(movingPhaseModels_[0]);
-    for (label movingPhasei = 1; movingPhasei < nMovingPhases; ++ movingPhasei)
+    volScalarField sumAlphaMoving
+    (
+        volScalarField::New
+        (
+            "sumAlphaMoving",
+            movingPhaseModels_[0],
+            calculatedFvPatchScalarField::typeName
+        )
+    );
+
+    for
+    (
+        label movingPhasei=1;
+        movingPhasei<movingPhaseModels_.size();
+        movingPhasei++
+    )
     {
-        alpha += movingPhaseModels_[movingPhasei];
+        sumAlphaMoving += movingPhaseModels_[movingPhasei];
     }
 
-    return rho/alpha;
+    return rho/sumAlphaMoving;
 }
 
 
 Foam::tmp<Foam::volVectorField> Foam::phaseSystem::U() const
 {
-    const label nMovingPhases = movingPhaseModels_.size();
-
     tmp<volVectorField> U(movingPhaseModels_[0]*movingPhaseModels_[0].U());
-    for (label movingPhasei = 1; movingPhasei < nMovingPhases; ++ movingPhasei)
+
+    for
+    (
+        label movingPhasei=1;
+        movingPhasei<movingPhaseModels_.size();
+        movingPhasei++
+    )
     {
         U.ref() +=
             movingPhaseModels_[movingPhasei]
@@ -280,13 +302,27 @@ Foam::tmp<Foam::volVectorField> Foam::phaseSystem::U() const
         return U;
     }
 
-    volScalarField alpha(movingPhaseModels_[0]);
-    for (label movingPhasei = 1; movingPhasei < nMovingPhases; ++ movingPhasei)
+    volScalarField sumAlphaMoving
+    (
+        volScalarField::New
+        (
+            "sumAlphaMoving",
+            movingPhaseModels_[0],
+            calculatedFvPatchScalarField::typeName
+        )
+    );
+
+    for
+    (
+        label movingPhasei=1;
+        movingPhasei<movingPhaseModels_.size();
+        movingPhasei++
+    )
     {
-        alpha += movingPhaseModels_[movingPhasei];
+        sumAlphaMoving += movingPhaseModels_[movingPhasei];
     }
 
-    return U/alpha;
+    return U/sumAlphaMoving;
 }
 
 
@@ -368,6 +404,20 @@ Foam::tmp<Foam::volScalarField> Foam::phaseSystem::dmdtf
 Foam::PtrList<Foam::volScalarField> Foam::phaseSystem::dmdts() const
 {
     return PtrList<volScalarField>(phaseModels_.size());
+}
+
+
+bool Foam::phaseSystem::incompressible() const
+{
+    forAll(phaseModels_, phasei)
+    {
+        if (!phaseModels_[phasei].incompressible())
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -229,7 +229,7 @@ bool Foam::functionObjectList::readFunctionObject
     word funcName(funcCall);
 
     int argLevel = 0;
-    wordList args;
+    wordReList args;
 
     List<Tuple2<word, string>> namedArgs;
     bool namedArg = false;
@@ -274,10 +274,7 @@ bool Foam::functionObjectList::readFunctionObject
                 }
                 else
                 {
-                    args.append
-                    (
-                        string::validate<word>(funcCall(start, i - start))
-                    );
+                    args.append(wordRe(funcCall(start, i - start)));
                 }
                 start = i+1;
             }
@@ -751,7 +748,7 @@ bool Foam::functionObjectList::read()
 
         const dictionary& functionsDict = entryPtr->dict();
 
-        const_cast<Time&>(time_).libs().open
+        libs.open
         (
             functionsDict,
             "libs",

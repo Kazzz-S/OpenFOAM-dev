@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2017-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2017-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -962,10 +962,7 @@ Foam::diameterModels::populationBalanceModel::populationBalanceModel
     alphas_(),
     dsm_(),
     U_(),
-    sourceUpdateCounter_
-    (
-        (mesh_.time().timeIndex()*nCorr())%sourceUpdateInterval()
-    )
+    sourceUpdateCounter_(0)
 {
     this->registerVelocityGroups();
 
@@ -1310,7 +1307,16 @@ void Foam::diameterModels::populationBalanceModel::solve()
                   + fvm::SuSp
                     (
                         fi.VelocityGroup().dmdt()
-                      - phase.continuityErrorFlow(),
+                      - phase.continuityError()
+
+                        // Temporary term pending update of continuityError
+                      - (
+                            phase.fluid().fvOptions()
+                            (
+                                alpha,
+                                const_cast<volScalarField&>(rho)
+                            ) & rho
+                        ),
                         fi
                     )
                   ==

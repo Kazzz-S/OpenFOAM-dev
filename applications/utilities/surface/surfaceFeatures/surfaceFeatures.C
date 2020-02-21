@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2018-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -172,8 +172,10 @@ namespace Foam
             dict.lookupOrDefault<Switch>("curvature", "off");
         const Switch featureProximity =
             dict.lookupOrDefault<Switch>("featureProximity", "off");
-        const Switch closeness =
-            dict.lookupOrDefault<Switch>("closeness", "off");
+        const Switch faceCloseness =
+            dict.lookupOrDefault<Switch>("faceCloseness", "off");
+        const Switch pointCloseness =
+            dict.lookupOrDefault<Switch>("pointCloseness", "off");
 
 
         Info<< nl << "Feature line extraction is only valid on closed manifold "
@@ -385,7 +387,7 @@ namespace Foam
         feMesh.writeStats(Info);
 
         Info<< nl << "Writing extendedFeatureEdgeMesh to "
-            << feMesh.objectPath() << endl;
+            << feMesh.localObjectPath() << endl;
 
         mkDir(feMesh.path());
 
@@ -418,13 +420,13 @@ namespace Foam
         );
 
         Info<< nl << "Writing featureEdgeMesh to "
-            << bfeMesh.objectPath() << endl;
+            << bfeMesh.localObjectPath() << endl;
 
         bfeMesh.regIOobject::write();
 
 
         // Find distance between close features
-        if (closeness)
+        if (faceCloseness || pointCloseness)
         {
             Info<< nl << "Extracting internal and external closeness of "
                 << "surface." << endl;
@@ -442,20 +444,26 @@ namespace Foam
                 surf
             );
 
+            if (faceCloseness)
             {
                 Pair<tmp<triSurfaceScalarField>> closenessFields
                 (
                     searchSurf.extractCloseness()
                 );
 
+                Info<< "    writing "
+                    << closenessFields.first()->name() << endl;
                 closenessFields.first()->write();
+
+                Info<< "    writing "
+                    << closenessFields.second()->name() << endl;
                 closenessFields.second()->write();
 
                 if (writeVTK)
                 {
                     const faceList faces(searchSurf.faces());
 
-                    vtkSurfaceWriter().write
+                    vtkSurfaceWriter(runTime.writeFormat()).write
                     (
                         runTime.constantPath()/"triSurface",// outputDir
                         searchSurf.objectRegistry::name(),  // surfaceName
@@ -463,11 +471,10 @@ namespace Foam
                         faces,
                         "internalCloseness",                // fieldName
                         closenessFields.first(),
-                        false,                              // isNodeValues
-                        true                                // verbose
+                        false                               // isNodeValues
                     );
 
-                    vtkSurfaceWriter().write
+                    vtkSurfaceWriter(runTime.writeFormat()).write
                     (
                         runTime.constantPath()/"triSurface",// outputDir
                         searchSurf.objectRegistry::name(),  // surfaceName
@@ -475,19 +482,24 @@ namespace Foam
                         faces,
                         "externalCloseness",                // fieldName
                         closenessFields.second(),
-                        false,                              // isNodeValues
-                        true                                // verbose
+                        false                               // isNodeValues
                     );
                 }
             }
 
+            if (pointCloseness)
             {
                 Pair<tmp<triSurfacePointScalarField >> closenessFields
                 (
                     searchSurf.extractPointCloseness()
                 );
 
+                Info<< "    writing "
+                    << closenessFields.first()->name() << endl;
                 closenessFields.first()->write();
+
+                Info<< "    writing "
+                    << closenessFields.second()->name() << endl;
                 closenessFields.second()->write();
 
                 if (writeVTK)
@@ -513,7 +525,7 @@ namespace Foam
                             externalClosenessPointField[meshPointMap[pi]];
                     }
 
-                    vtkSurfaceWriter().write
+                    vtkSurfaceWriter(runTime.writeFormat()).write
                     (
                         runTime.constantPath()/"triSurface",// outputDir
                         searchSurf.objectRegistry::name(),  // surfaceName
@@ -521,11 +533,10 @@ namespace Foam
                         faces,
                         "internalPointCloseness",           // fieldName
                         internalCloseness,
-                        true,                               // isNodeValues
-                        true                                // verbose
+                        true                                // isNodeValues
                     );
 
-                    vtkSurfaceWriter().write
+                    vtkSurfaceWriter(runTime.writeFormat()).write
                     (
                         runTime.constantPath()/"triSurface",// outputDir
                         searchSurf.objectRegistry::name(),  // surfaceName
@@ -533,8 +544,7 @@ namespace Foam
                         faces,
                         "externalPointCloseness",           // fieldName
                         externalCloseness,
-                        true,                               // isNodeValues
-                        true                                // verbose
+                        true                                // isNodeValues
                     );
                 }
             }
@@ -564,7 +574,7 @@ namespace Foam
 
             if (writeVTK)
             {
-                vtkSurfaceWriter().write
+                vtkSurfaceWriter(runTime.writeFormat()).write
                 (
                     runTime.constantPath()/"triSurface",// outputDir
                     sFeatFileName,                      // surfaceName
@@ -572,8 +582,7 @@ namespace Foam
                     faces,
                     "curvature",                        // fieldName
                     k,
-                    true,                               // isNodeValues
-                    true                                // verbose
+                    true                                // isNodeValues
                 );
             }
         }
@@ -637,7 +646,7 @@ namespace Foam
 
             if (writeVTK)
             {
-                vtkSurfaceWriter().write
+                vtkSurfaceWriter(runTime.writeFormat()).write
                 (
                     runTime.constantPath()/"triSurface",// outputDir
                     sFeatFileName,                      // surfaceName
@@ -645,8 +654,7 @@ namespace Foam
                     faces,
                     "featureProximity",                 // fieldName
                     featureProximity,
-                    false,                              // isNodeValues
-                    true                                // verbose
+                    false                               // isNodeValues
                 );
             }
         }

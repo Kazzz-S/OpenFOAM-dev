@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -26,6 +26,7 @@ License
 #include "functionEntry.H"
 #include "IOstreams.H"
 #include "ISstream.H"
+#include "Pstream.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -49,11 +50,18 @@ namespace Foam
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-Foam::word Foam::functionEntry::readLine(Istream& is)
+Foam::token Foam::functionEntry::readLine(Istream& is)
 {
-    word s;
-    dynamic_cast<ISstream&>(is).getLine(s);
-    return s;
+    if (isA<Pstream>(is))
+    {
+        return token(is);
+    }
+    else
+    {
+        word s;
+        dynamic_cast<ISstream&>(is).getLine(s);
+        return token(s, is.lineNumber());
+    }
 }
 
 
@@ -91,11 +99,7 @@ Foam::functionEntry::functionEntry
     Istream& is
 )
 :
-    primitiveEntry
-    (
-        key,
-        token(readLine(is), is.lineNumber())
-    )
+    primitiveEntry(key, readLine(is))
 {}
 
 
@@ -192,17 +196,17 @@ void Foam::functionEntry::write(Ostream& os) const
 
     writeKeyword(os, keyword());
 
-    for (label i=0; i<size(); ++i)
+    if (size() == 1)
     {
-        os << operator[](i);
-
-        if (i < size()-1)
-        {
-            os  << token::SPACE;
-        }
+        os << operator[](0) << endl;
     }
-
-    os  << endl;
+    else
+    {
+        FatalIOErrorInFunction(os)
+            << "Incorrect number of tokens in functionEntry, "
+               "should be a single word."
+            << exit(FatalIOError);
+    }
 }
 
 

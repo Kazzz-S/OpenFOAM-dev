@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2013-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -104,7 +104,7 @@ void Foam::cyclicACMIPolyPatch::resetAMI() const
         if (tgtMask_.size())
         {
             const cyclicACMIPolyPatch& cp =
-                refCast<const cyclicACMIPolyPatch>(this->neighbPatch());
+                refCast<const cyclicACMIPolyPatch>(this->nbrPatch());
             const polyPatch& pp = cp.nonOverlapPatch();
 
             vectorField::subField Sf = cp.faceAreas();
@@ -161,12 +161,27 @@ void Foam::cyclicACMIPolyPatch::resetAMI() const
 }
 
 
-void Foam::cyclicACMIPolyPatch::initGeometry(PstreamBuffers& pBufs)
+void Foam::cyclicACMIPolyPatch::initCalcGeometry(PstreamBuffers& pBufs)
 {
-    cyclicAMIPolyPatch::initGeometry(pBufs);
+    cyclicAMIPolyPatch::initCalcGeometry(pBufs);
 
     // Initialise the AMI
     resetAMI();
+}
+
+
+void Foam::cyclicACMIPolyPatch::calcGeometry(PstreamBuffers& pBufs)
+{
+    static_cast<cyclicTransform&>(*this) =
+        cyclicTransform
+        (
+            name(),
+            faceAreas(),
+            *this,
+            nbrPatchName(),
+            nbrPatch(),
+            matchTolerance()
+        );
 }
 
 
@@ -204,8 +219,7 @@ Foam::cyclicACMIPolyPatch::cyclicACMIPolyPatch
     const label start,
     const label index,
     const polyBoundaryMesh& bm,
-    const word& patchType,
-    const transformType transform
+    const word& patchType
 )
 :
     cyclicAMIPolyPatch
@@ -216,7 +230,6 @@ Foam::cyclicACMIPolyPatch::cyclicACMIPolyPatch
         index,
         bm,
         patchType,
-        transform,
         false,
         AMIInterpolation::imPartialFaceAreaWeight
     ),
@@ -349,9 +362,9 @@ Foam::cyclicACMIPolyPatch::~cyclicACMIPolyPatch()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const Foam::cyclicACMIPolyPatch& Foam::cyclicACMIPolyPatch::neighbPatch() const
+const Foam::cyclicACMIPolyPatch& Foam::cyclicACMIPolyPatch::nbrPatch() const
 {
-    const polyPatch& pp = this->boundaryMesh()[neighbPatchID()];
+    const polyPatch& pp = this->boundaryMesh()[nbrPatchID()];
     return refCast<const cyclicACMIPolyPatch>(pp);
 }
 
@@ -419,30 +432,6 @@ Foam::label Foam::cyclicACMIPolyPatch::nonOverlapPatchID() const
     }
 
     return nonOverlapPatchID_;
-}
-
-
-void Foam::cyclicACMIPolyPatch::calcGeometry
-(
-    const primitivePatch& referPatch,
-    const pointField& thisCtrs,
-    const vectorField& thisAreas,
-    const pointField& thisCc,
-    const pointField& nbrCtrs,
-    const vectorField& nbrAreas,
-    const pointField& nbrCc
-)
-{
-    cyclicAMIPolyPatch::calcGeometry
-    (
-        referPatch,
-        thisCtrs,
-        thisAreas,
-        thisCc,
-        nbrCtrs,
-        nbrAreas,
-        nbrCc
-    );
 }
 
 

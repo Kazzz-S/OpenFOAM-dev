@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2013-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -69,6 +69,13 @@ thixotropicViscosity::thixotropicViscosity
     c_("c", pow(dimTime, d_.value() - scalar(1)), coeffDict_),
     mu0_("mu0", dimPressure*dimTime, coeffDict_),
     muInf_("muInf", mu0_.dimensions(), coeffDict_),
+    BinghamPlastic_(coeffDict_.found("tauy")),
+    tauy_
+    (
+        BinghamPlastic_
+      ? dimensionedScalar("tauy", dimPressure, coeffDict_)
+      : dimensionedScalar("tauy", dimPressure, 0)
+    ),
     K_(1 - sqrt(muInf_/mu0_)),
     lambda_
     (
@@ -108,10 +115,10 @@ void thixotropicViscosity::correct
 {
     const kinematicSingleLayer& film = filmType<kinematicSingleLayer>();
 
-    const volVectorField& U = film.U();
+    const volVectorField& Us = film.Us();
     const volVectorField& Uw = film.Uw();
     const volScalarField& delta = film.delta();
-    const volScalarField alphaRho = film.alpha()*film.rho();
+    const volScalarField alphaRho(film.alpha()*film.rho());
     const surfaceScalarField& phiU = film.phiU();
     const volScalarField& coverage = film.coverage();
 
@@ -119,7 +126,7 @@ void thixotropicViscosity::correct
     const volScalarField gDot
     (
         "gDot",
-        coverage*mag(U - Uw)/(delta + film.deltaSmall())
+        coverage*mag(Us - Uw)/(delta + film.deltaSmall())
     );
 
     const dimensionedScalar alphaRho0
@@ -157,6 +164,20 @@ void thixotropicViscosity::correct
     lambda_.max(0);
 
     mu_ = muInf_/(sqr(1 - K_*lambda_) + rootVSmall);
+
+    // Add optional yield stress contribution to the viscosity
+    if (BinghamPlastic_)
+    {
+        dimensionedScalar tauySmall("tauySmall", tauy_.dimensions(), small);
+        dimensionedScalar muMax_("muMax", 100*mu0_);
+
+        mu_ = min
+        (
+            tauy_/(gDot + 1.0e-4*(tauy_ + tauySmall)/mu0_) + mu_,
+            muMax_
+        );
+    }
+
     mu_.correctBoundaryConditions();
 }
 

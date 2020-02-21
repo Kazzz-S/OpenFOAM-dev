@@ -42,6 +42,8 @@ boundaryField
     {
         type            totalPressure;
         p0              uniform 0;
+        U               U.air;
+        phi             phi.air;
     }
 
     defaultFaces

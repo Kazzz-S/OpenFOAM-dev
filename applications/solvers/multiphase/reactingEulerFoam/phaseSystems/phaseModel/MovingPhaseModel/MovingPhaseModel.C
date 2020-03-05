@@ -85,16 +85,11 @@ Foam::MovingPhaseModel<BasePhaseModel>::phi(const volVectorField& U) const
             calculatedFvPatchScalarField::typeName
         );
 
-        forAll(U.boundaryField(), i)
+        forAll(U.boundaryField(), patchi)
         {
-            if
-            (
-                isA<fixedValueFvPatchVectorField>(U.boundaryField()[i])
-             || isA<slipFvPatchVectorField>(U.boundaryField()[i])
-             || isA<partialSlipFvPatchVectorField>(U.boundaryField()[i])
-            )
+            if (!U.boundaryField()[patchi].assignable())
             {
-                phiTypes[i] = fixedValueFvPatchScalarField::typeName;
+                phiTypes[patchi] = fixedValueFvPatchScalarField::typeName;
             }
         }
 
@@ -208,13 +203,14 @@ Foam::MovingPhaseModel<BasePhaseModel>::~MovingPhaseModel()
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class BasePhaseModel>
-void Foam::MovingPhaseModel<BasePhaseModel>::correctContinuityError()
+void Foam::MovingPhaseModel<BasePhaseModel>::correctContinuityError
+(
+    const volScalarField& source
+)
 {
     volScalarField& rho = this->thermoRef().rho();
 
-    continuityError_ =
-        fvc::ddt(*this, rho) + fvc::div(alphaRhoPhi_)
-      - (this->fluid().fvOptions()(*this, rho)&rho);
+    continuityError_ = fvc::ddt(*this, rho) + fvc::div(alphaRhoPhi_) - source;
 }
 
 
@@ -223,7 +219,6 @@ void Foam::MovingPhaseModel<BasePhaseModel>::correct()
 {
     BasePhaseModel::correct();
     this->fluid().MRF().correctBoundaryVelocity(U_);
-    correctContinuityError();
 }
 
 
@@ -249,13 +244,6 @@ void Foam::MovingPhaseModel<BasePhaseModel>::correctKinematics()
         K_.clear();
         K();
     }
-}
-
-
-template<class BasePhaseModel>
-void Foam::MovingPhaseModel<BasePhaseModel>::correctThermo()
-{
-    correctContinuityError();
 }
 
 

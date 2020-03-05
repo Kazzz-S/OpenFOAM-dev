@@ -27,6 +27,7 @@ License
 #include "sinteringModel.H"
 #include "fvmDdt.H"
 #include "fvmDiv.H"
+#include "fvcDiv.H"
 #include "fvmSup.H"
 #include "fvcSup.H"
 #include "fvcDdt.H"
@@ -214,22 +215,13 @@ void Foam::diameterModels::shapeModels::fractal::correct()
         fvc::ddt(alpha, rho, fi)*kappa_.oldTime()
       + alpha*rho*fi*fvm::ddt(kappa_)
       + fvm::div(fAlphaRhoPhi, kappa_)
-      + fvm::SuSp(-phase.continuityError()*fi, kappa_)
       + fvm::SuSp
         (
-            (
+            fi
+           *(
                 fi.VelocityGroup().dmdt()
-
-                // Temporary term pending update of continuityError
-              - (
-                    phase.fluid().fvOptions()
-                    (
-                        alpha,
-                        const_cast<volScalarField&>(rho)
-                    ) & rho
-                )
-            )
-           *fi,
+              - (fvc::ddt(alpha, rho) + fvc::div(phase.alphaRhoPhi()))
+            ),
             kappa_
         )
       ==

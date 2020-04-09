@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,39 +23,56 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "SemiImplicitSource.H"
+#include "wordAndDictionary.H"
 
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-template<class Type>
-inline const typename Foam::fv::SemiImplicitSource<Type>::volumeModeType&
-Foam::fv::SemiImplicitSource<Type>::volumeMode() const
+Foam::wordAndDictionary::wordAndDictionary(Istream& is)
+:
+    Tuple2<word, dictionary>()
 {
-    return volumeMode_;
+    is >> *this;
+
+    is.check("wordAndDictionary::wordAndDictionary(Istream& is)");
 }
 
 
-template<class Type>
-inline const Foam::List<Foam::Tuple2<Type, Foam::scalar>>&
-Foam::fv::SemiImplicitSource<Type>::injectionRate() const
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+Foam::wordAndDictionary::~wordAndDictionary()
+{}
+
+
+// * * * * * * * * * * * * * * Friend Operators * * * * * * * * * * * * * * //
+
+Foam::Istream& Foam::operator>>(Istream& is, wordAndDictionary& wd)
 {
-    return injectionRate_;
+    wd.first() = word(is);
+    wd.second().clear();
+
+    token t(is);
+    is.putBack(t);
+
+    if (t.isPunctuation() && t.pToken() == token::BEGIN_BLOCK)
+    {
+        dictionary d(is);
+        wd.second().transfer(d);
+    }
+
+    return is;
 }
 
 
-template<class Type>
-inline typename Foam::fv::SemiImplicitSource<Type>::volumeModeType&
-Foam::fv::SemiImplicitSource<Type>::volumeMode()
+Foam::Ostream& Foam::operator<<(Ostream& os, const wordAndDictionary& wd)
 {
-    return volumeMode_;
-}
+    os << wd.first();
 
+    if (!wd.second().empty())
+    {
+        os << token::SPACE << wd.second();
+    }
 
-template<class Type>
-inline Foam::List<Foam::Tuple2<Type,
-Foam::scalar>>& Foam::fv::SemiImplicitSource<Type>::injectionRate()
-{
-    return injectionRate_;
+    return os;
 }
 
 

@@ -15,55 +15,42 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-injector1
-{
-    timeStart       0.1;
-    duration        5;
-    selectionMode   points;
-    points
-    (
-        (0.075 0.2 0.05)
-    );
-}
-
 options
 {
-    massSource1
+    massSource
     {
-        type            scalarSemiImplicitSource;
+        type            semiImplicitSource;
 
-        $injector1;
+        timeStart       0.1;
+        duration        5;
+
+        selectionMode   points;
+        points
+        (
+            (0.075 0.2 0.05)
+        );
 
         volumeMode      absolute;
-        injectionRateSuSp
+
+        sources
         {
-            thermo:rho.air     (1e-3 0); // kg/s
-        }
-    }
+            thermo:rho.air
+            {
+                explicit    1e-3; // kg/s
+                implicit    0;
+            }
 
-    momentumSource1
-    {
-        type            vectorSemiImplicitSource;
+            U.air
+            {
+                explicit    (0 -1e-2 0); // kg*m/s^2
+                implicit    0;
+            }
 
-        $injector1;
-
-        volumeMode      absolute;
-        injectionRateSuSp
-        {
-            U.air           ((0 -1e-2 0) 0); // kg*m/s^2
-        }
-    }
-
-    energySource1
-    {
-        type            scalarSemiImplicitSource;
-
-        $injector1;
-
-        volumeMode      absolute;
-        injectionRateSuSp
-        {
-            e.air      (500 0); // kg*m^2/s^3
+            e.air
+            {
+                explicit    500; // kg*m^2/s^3
+                implicit    0;
+            }
         }
     }
 }

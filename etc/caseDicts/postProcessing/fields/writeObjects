@@ -6,7 +6,7 @@
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 Description
-    Writes out specified objects, e.g. fields, stored on the case database.
+    Writes the specified objects, e.g. fields, stored in the case database.
 
 \*---------------------------------------------------------------------------*/
 

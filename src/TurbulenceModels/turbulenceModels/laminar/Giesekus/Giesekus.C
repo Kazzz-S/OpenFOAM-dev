@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2019-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -33,6 +33,25 @@ namespace Foam
 namespace laminarModels
 {
 
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
+
+template<class BasicTurbulenceModel>
+tmp<fvSymmTensorMatrix>
+Giesekus<BasicTurbulenceModel>::sigmaSource
+(
+    const label modei,
+    volSymmTensorField& sigma
+) const
+{
+    return fvm::Su
+    (
+        this->alpha_*this->rho_
+       *alphaGs_[modei]*innerSqr(sigma)/this->nuM_, sigma
+    )
+  - fvm::Sp(this->alpha_*this->rho_/this->lambdas_[modei], sigma);
+}
+
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class BasicTurbulenceModel>
@@ -44,7 +63,6 @@ Giesekus<BasicTurbulenceModel>::Giesekus
     const surfaceScalarField& alphaRhoPhi,
     const surfaceScalarField& phi,
     const transportModel& transport,
-    const word& propertiesName,
     const word& type
 )
 :
@@ -56,11 +74,10 @@ Giesekus<BasicTurbulenceModel>::Giesekus
         alphaRhoPhi,
         phi,
         transport,
-        propertiesName,
         type
     ),
 
-    alphaG_("alphaG", dimless, this->coeffDict_)
+    alphaGs_(this->readModeCoefficients("alphaG", dimless))
 {
     if (type == typeName)
     {
@@ -76,7 +93,7 @@ bool Giesekus<BasicTurbulenceModel>::read()
 {
     if (Maxwell<BasicTurbulenceModel>::read())
     {
-        alphaG_.read(this->coeffDict());
+        alphaGs_ = this->readModeCoefficients("alphaG", dimless);
 
         return true;
     }
@@ -84,18 +101,6 @@ bool Giesekus<BasicTurbulenceModel>::read()
     {
         return false;
     }
-}
-
-
-template<class BasicTurbulenceModel>
-tmp<fvSymmTensorMatrix>
-Giesekus<BasicTurbulenceModel>::sigmaSource() const
-{
-    return fvm::Su
-    (
-        this->alpha_*this->rho_
-       *alphaG_*innerSqr(this->sigma_)/this->nuM_, this->sigma_
-    );
 }
 
 

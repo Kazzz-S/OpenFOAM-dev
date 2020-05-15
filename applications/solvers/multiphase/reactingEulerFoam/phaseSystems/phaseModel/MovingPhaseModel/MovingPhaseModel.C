@@ -25,7 +25,6 @@ License
 
 #include "MovingPhaseModel.H"
 #include "phaseSystem.H"
-#include "phaseCompressibleTurbulenceModel.H"
 #include "fixedValueFvPatchFields.H"
 #include "slipFvPatchFields.H"
 #include "partialSlipFvPatchFields.H"
@@ -36,8 +35,6 @@ License
 #include "fvcDdt.H"
 #include "fvcDiv.H"
 #include "fvcFlux.H"
-#include "surfaceInterpolate.H"
-#include "fvMatrix.H"
 
 // * * * * * * * * * * * * * Static Member Functions * * * * * * * * * * * * //
 
@@ -164,7 +161,7 @@ Foam::MovingPhaseModel<BasePhaseModel>::MovingPhaseModel
     divU_(nullptr),
     turbulence_
     (
-        phaseCompressibleTurbulenceModel::New
+        phaseCompressibleMomentumTransportModel::New
         (
             *this,
             this->thermo().rho(),
@@ -173,6 +170,14 @@ Foam::MovingPhaseModel<BasePhaseModel>::MovingPhaseModel
             phi_,
             *this
         )
+    ),
+    thermophysicalTransport_
+    (
+        PhaseThermophysicalTransportModel
+        <
+            phaseCompressibleMomentumTransportModel,
+            typename BasePhaseModel::thermoModel
+        >::New(turbulence_, this->thermo_)
     ),
     continuityError_
     (
@@ -260,8 +265,7 @@ template<class BasePhaseModel>
 void Foam::MovingPhaseModel<BasePhaseModel>::correctEnergyTransport()
 {
     BasePhaseModel::correctEnergyTransport();
-
-    turbulence_->correctEnergyTransport();
+    thermophysicalTransport_->correct();
 }
 
 
@@ -285,7 +289,7 @@ Foam::MovingPhaseModel<BasePhaseModel>::UEqn()
       + fvm::div(alphaRhoPhi_, U_)
       + fvm::SuSp(-this->continuityError(), U_)
       + this->fluid().MRF().DDt(alpha*rho, U_)
-      + turbulence_->divDevRhoReff(U_)
+      + turbulence_->divDevTau(U_)
     );
 }
 
@@ -304,7 +308,7 @@ Foam::MovingPhaseModel<BasePhaseModel>::UfEqn()
         fvm::div(alphaRhoPhi_, U_)
       + fvm::SuSp(fvc::ddt(*this, rho) - this->continuityError(), U_)
       + this->fluid().MRF().DDt(alpha*rho, U_)
-      + turbulence_->divDevRhoReff(U_)
+      + turbulence_->divDevTau(U_)
     );
 }
 
@@ -440,66 +444,10 @@ void Foam::MovingPhaseModel<BasePhaseModel>::divU(tmp<volScalarField> divU)
 
 
 template<class BasePhaseModel>
-Foam::tmp<Foam::volScalarField>
-Foam::MovingPhaseModel<BasePhaseModel>::mut() const
-{
-    return turbulence_->mut();
-}
-
-
-template<class BasePhaseModel>
-Foam::tmp<Foam::volScalarField>
-Foam::MovingPhaseModel<BasePhaseModel>::muEff() const
-{
-    return turbulence_->muEff();
-}
-
-
-template<class BasePhaseModel>
-Foam::tmp<Foam::volScalarField>
-Foam::MovingPhaseModel<BasePhaseModel>::nut() const
-{
-    return turbulence_->nut();
-}
-
-
-template<class BasePhaseModel>
-Foam::tmp<Foam::volScalarField>
-Foam::MovingPhaseModel<BasePhaseModel>::nuEff() const
-{
-    return turbulence_->nuEff();
-}
-
-
-template<class BasePhaseModel>
-Foam::tmp<Foam::volScalarField>
-Foam::MovingPhaseModel<BasePhaseModel>::kappaEff() const
-{
-    return turbulence_->kappaEff();
-}
-
-
-template<class BasePhaseModel>
 Foam::tmp<Foam::scalarField>
 Foam::MovingPhaseModel<BasePhaseModel>::kappaEff(const label patchi) const
 {
-    return turbulence_->kappaEff(patchi);
-}
-
-
-template<class BasePhaseModel>
-Foam::tmp<Foam::volScalarField>
-Foam::MovingPhaseModel<BasePhaseModel>::alphaEff() const
-{
-    return turbulence_->alphaEff();
-}
-
-
-template<class BasePhaseModel>
-Foam::tmp<Foam::scalarField>
-Foam::MovingPhaseModel<BasePhaseModel>::alphaEff(const label patchi) const
-{
-    return turbulence_->alphaEff(patchi);
+    return thermophysicalTransport_->kappaEff(patchi);
 }
 
 
@@ -516,6 +464,22 @@ Foam::tmp<Foam::volScalarField>
 Foam::MovingPhaseModel<BasePhaseModel>::pPrime() const
 {
     return turbulence_->pPrime();
+}
+
+
+template<class BasePhaseModel>
+Foam::tmp<Foam::fvScalarMatrix>
+Foam::MovingPhaseModel<BasePhaseModel>::divq(volScalarField& he) const
+{
+    return thermophysicalTransport_->divq(he);
+}
+
+
+template<class BasePhaseModel>
+Foam::tmp<Foam::fvScalarMatrix>
+Foam::MovingPhaseModel<BasePhaseModel>::divj(volScalarField& Yi) const
+{
+    return thermophysicalTransport_->divj(Yi);
 }
 
 

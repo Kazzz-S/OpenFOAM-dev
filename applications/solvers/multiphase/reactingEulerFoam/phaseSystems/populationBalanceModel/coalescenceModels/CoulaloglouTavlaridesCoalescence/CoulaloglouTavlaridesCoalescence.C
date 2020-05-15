@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2018-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -25,7 +25,7 @@ License
 
 #include "CoulaloglouTavlaridesCoalescence.H"
 #include "addToRunTimeSelectionTable.H"
-#include "phaseCompressibleTurbulenceModel.H"
+#include "phaseCompressibleMomentumTransportModel.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -83,7 +83,7 @@ addToCoalescenceRate
        *cbrt(popBal_.continuousTurbulence().epsilon())/(1 + popBal_.alphas())
        *exp
         (
-          - C2_*continuousPhase.mu()*continuousPhase.rho()
+          - C2_*continuousPhase.thermo().mu()*continuousPhase.rho()
            *popBal_.continuousTurbulence().epsilon()
            /sqr(popBal_.sigmaWithContinuousPhase(fi.phase()))
            /pow3(1 + popBal_.alphas())

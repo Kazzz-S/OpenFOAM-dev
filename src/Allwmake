@@ -53,9 +53,11 @@ parallel/Allwmake $targetType $*
 wmake $targetType ODE
 wmake $targetType randomProcesses
 
-transportModels/Allwmake $targetType $*
+wmake $targetType transportModels
+twoPhaseModels/Allwmake $targetType $*
 thermophysicalModels/Allwmake $targetType $*
-TurbulenceModels/Allwmake $targetType $*
+MomentumTransportModels/Allwmake $targetType $*
+ThermophysicalTransportModels/Allwmake $targetType $*
 wmake $targetType radiationModels
 wmake $targetType combustionModels
 regionModels/Allwmake $targetType $*

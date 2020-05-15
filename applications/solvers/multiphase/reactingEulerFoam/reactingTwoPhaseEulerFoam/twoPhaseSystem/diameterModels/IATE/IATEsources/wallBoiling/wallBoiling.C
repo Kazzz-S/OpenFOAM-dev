@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2016-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2016-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -24,7 +24,6 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "wallBoiling.H"
-#include "phaseCompressibleTurbulenceModel.H"
 #include "alphatWallBoilingWallFunctionFvPatchScalarField.H"
 #include "fvmSup.H"
 #include "addToRunTimeSelectionTable.H"
@@ -89,18 +88,13 @@ Foam::diameterModels::IATEsources::wallBoiling::R
         dimensionedScalar(kappai.dimensions()/dimTime, 0)
     );
 
-    const phaseCompressibleTurbulenceModel& turbulence =
-        phase().db().lookupObjectRef<phaseCompressibleTurbulenceModel>
+    const volScalarField& alphat =
+        phase().mesh().lookupObject<volScalarField>
         (
-            IOobject::groupName
-            (
-                turbulenceModel::propertiesName,
-                otherPhase().name()
-            )
+            IOobject::groupName("alphat", otherPhase().name())
         );
 
-    const tmp<volScalarField> talphat(turbulence.alphat());
-    const volScalarField::Boundary& alphatBf = talphat().boundaryField();
+    const volScalarField::Boundary& alphatBf = alphat.boundaryField();
 
     const scalarField& rho = phase().rho();
 

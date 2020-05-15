@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2018-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -25,7 +25,7 @@ License
 
 #include "LaakkonenAlopaeusAittamaa.H"
 #include "addToRunTimeSelectionTable.H"
-#include "phaseCompressibleTurbulenceModel.H"
+#include "phaseCompressibleMomentumTransportModel.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -95,7 +95,7 @@ Foam::diameterModels::breakupModels::LaakkonenAlopaeusAittamaa::setBreakupRate
                     continuousPhase.rho()*pow(fi.dSph(), 5.0/3.0)
                    *pow(popBal_.continuousTurbulence().epsilon(), 2.0/3.0)
                 )
-              + C3_*continuousPhase.mu()
+              + C3_*continuousPhase.thermo().mu()
                /(
                     sqrt(continuousPhase.rho()*fi.phase().rho())
                    *cbrt(popBal_.continuousTurbulence().epsilon())

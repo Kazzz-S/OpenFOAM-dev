@@ -51,13 +51,24 @@ volScalarField& p = thermo.p();
 mesh.setFluxRequired(p.name());
 
 Info << "Creating turbulence model.\n" << nl;
-autoPtr<compressible::turbulenceModel> turbulence
+autoPtr<compressible::momentumTransportModel> turbulence
 (
-    compressible::turbulenceModel::New
+    compressible::momentumTransportModel::New
     (
         rho,
         U,
         phi,
+        thermo
+    )
+);
+
+Info<< "Creating thermophysical transport model\n" << endl;
+autoPtr<rhoReactionThermophysicalTransportModel>
+thermophysicalTransport
+(
+    rhoReactionThermophysicalTransportModel::New
+    (
+        turbulence(),
         thermo
     )
 );

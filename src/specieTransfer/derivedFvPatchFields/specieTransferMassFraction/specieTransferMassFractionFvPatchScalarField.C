@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2019-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -27,7 +27,7 @@ License
 #include "specieTransferVelocityFvPatchVectorField.H"
 #include "volFields.H"
 #include "surfaceFields.H"
-#include "turbulentFluidThermoModel.H"
+#include "thermophysicalTransportModel.H"
 #include "psiReactionThermo.H"
 #include "rhoReactionThermo.H"
 
@@ -253,9 +253,9 @@ void Foam::specieTransferMassFractionFvPatchScalarField::updateCoeffs()
     const scalarField AAlphaEffp
     (
         patch().magSf()
-       *db().lookupObject<compressible::turbulenceModel>
+       *db().lookupObject<thermophysicalTransportModel>
         (
-            turbulenceModel::propertiesName
+            thermophysicalTransportModel::typeName
         )
        .alphaEff(patch().index())
     );

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2014-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2014-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -28,7 +28,7 @@ License
 #include "fvcGrad.H"
 #include "surfaceInterpolate.H"
 #include "fvcSnGrad.H"
-#include "phaseCompressibleTurbulenceModel.H"
+#include "phaseCompressibleMomentumTransportModel.H"
 #include "BlendedInterfacialModel.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -64,15 +64,18 @@ Foam::turbulentDispersionModel::~turbulentDispersionModel()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const Foam::phaseCompressibleTurbulenceModel&
+const Foam::phaseCompressibleMomentumTransportModel&
 Foam::turbulentDispersionModel::continuousTurbulence() const
 {
     return
-        pair_.phase1().mesh().lookupObject<phaseCompressibleTurbulenceModel>
+        pair_.phase1().mesh().lookupObject
+        <
+            phaseCompressibleMomentumTransportModel
+        >
         (
             IOobject::groupName
             (
-                turbulenceModel::propertiesName,
+                momentumTransportModel::typeName,
                 pair_.continuous().name()
             )
         );

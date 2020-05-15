@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2019-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -24,12 +24,12 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "adsorptionMassFractionFvPatchScalarField.H"
-#include "addToRunTimeSelectionTable.H"
 #include "volFields.H"
 #include "surfaceFields.H"
-#include "turbulentFluidThermoModel.H"
+#include "thermophysicalTransportModel.H"
 #include "psiReactionThermo.H"
 #include "rhoReactionThermo.H"
+#include "addToRunTimeSelectionTable.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -109,14 +109,14 @@ Foam::adsorptionMassFractionFvPatchScalarField::calcPhiYp() const
     const scalarField Yc(patchInternalField());
 
     // Get the patch delta coefficients multiplied by the diffusivity
-    const compressible::turbulenceModel& turb =
-        db().lookupObject<compressible::turbulenceModel>
+    const thermophysicalTransportModel& ttm =
+        db().lookupObject<thermophysicalTransportModel>
         (
-            turbulenceModel::propertiesName
+            thermophysicalTransportModel::typeName
         );
     const scalarField alphaEffDeltap
     (
-        turb.alphaEff(patch().index())*patch().deltaCoeffs()
+        ttm.alphaEff(patch().index())*patch().deltaCoeffs()
     );
 
     // Get the specie molecular weight, if needed

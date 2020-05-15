@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -36,7 +36,6 @@ SourceFiles
 #include "dimensionedScalar.H"
 #include "volFields.H"
 #include "surfaceFields.H"
-#include "transportModel.H"
 #include "rhoThermo.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -49,7 +48,7 @@ class twoPhaseSystem;
 class diameterModel;
 
 template<class Phase>
-class PhaseCompressibleTurbulenceModel;
+class PhaseCompressibleMomentumTransportModel;
 
 
 /*---------------------------------------------------------------------------*\
@@ -58,8 +57,7 @@ class PhaseCompressibleTurbulenceModel;
 
 class phaseModel
 :
-    public volScalarField,
-    public transportModel
+    public volScalarField
 {
     // Private Data
 
@@ -97,7 +95,8 @@ class phaseModel
         autoPtr<diameterModel> dPtr_;
 
         //- Turbulence model
-        autoPtr<PhaseCompressibleTurbulenceModel<phaseModel>> turbulence_;
+        autoPtr<PhaseCompressibleMomentumTransportModel<phaseModel>>
+            turbulence_;
 
 
 public:
@@ -151,12 +150,12 @@ public:
         tmp<volScalarField> d() const;
 
         //- Return the turbulence model
-        const PhaseCompressibleTurbulenceModel<phaseModel>&
+        const PhaseCompressibleMomentumTransportModel<phaseModel>&
             turbulence() const;
 
         //- Return non-const access to the turbulence model
         //  for correction
-        PhaseCompressibleTurbulenceModel<phaseModel>&
+        PhaseCompressibleMomentumTransportModel<phaseModel>&
             turbulence();
 
         //- Return the thermophysical model
@@ -345,12 +344,6 @@ public:
 
         //- Read phaseProperties dictionary
         virtual bool read(const dictionary& phaseProperties);
-
-        //- Dummy Read for transportModel
-        virtual bool read()
-        {
-            return true;
-        }
 };
 
 

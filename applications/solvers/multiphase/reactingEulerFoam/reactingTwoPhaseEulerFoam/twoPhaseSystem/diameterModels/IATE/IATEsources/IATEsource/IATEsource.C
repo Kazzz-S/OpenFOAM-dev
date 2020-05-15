@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -25,7 +25,7 @@ License
 
 #include "IATEsource.H"
 #include "fvMatrix.H"
-#include "phaseCompressibleTurbulenceModel.H"
+#include "phaseCompressibleMomentumTransportModel.H"
 #include "uniformDimensionedFields.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -92,7 +92,7 @@ Foam::tmp<Foam::volScalarField> Foam::diameterModels::IATEsource::Ut() const
 
 Foam::tmp<Foam::volScalarField> Foam::diameterModels::IATEsource::Re() const
 {
-    return max(Ur()*phase().d()/otherPhase().nu(), scalar(1e-3));
+    return max(Ur()*phase().d()/otherPhase().thermo().nu(), scalar(1e-3));
 }
 
 Foam::tmp<Foam::volScalarField> Foam::diameterModels::IATEsource::CD() const
@@ -118,7 +118,7 @@ Foam::tmp<Foam::volScalarField> Foam::diameterModels::IATEsource::Mo() const
         phase().db().lookupObject<uniformDimensionedVectorField>("g");
 
     return
-        mag(g)*pow4(otherPhase().nu())*sqr(otherPhase().rho())
+        mag(g)*pow4(otherPhase().thermo().nu())*sqr(otherPhase().rho())
        *(otherPhase().rho() - phase().rho())
        /pow3(fluid().sigma());
 }
